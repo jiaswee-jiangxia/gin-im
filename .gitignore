@@ -1,0 +1,9 @@
+/.idea/
+.idea/
+.idea
+#/storage/logs/*
+#/storage/uploaded/*
+#/public/storage
+#.env
+#/config/*.yml
+#*.yml
