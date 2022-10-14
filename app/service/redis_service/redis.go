@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const CacheNamePre = "cm_"
+const CacheNamePre = "im_"
 
 const RedisCacheDefault = 0
 const RedisCacheUser = 1

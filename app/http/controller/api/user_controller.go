@@ -148,5 +148,6 @@ func Profile(context *gin.Context) {
 	}
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
-	response.Success(context, "ok", profile)
+	fmt.Println(profile.CreatedAt)
+	response.Success(context, "ok", profile.CreatedAt)
 }

@@ -1,9 +1,12 @@
 /.idea/
 .idea/
 .idea
-#/storage/logs/*
+/storage/logs/*
 #/storage/uploaded/*
 #/public/storage
-#.env
+.env
+/storage/oauth-private.key
+/storage/oauth-public.key
 #/config/*.yml
 #*.yml
+gin-im
