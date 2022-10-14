@@ -129,7 +129,7 @@ func Profile(context *gin.Context) {
 	usernameText := fmt.Sprintf("%v", username)
 	rdb := redis_service.RedisStruct{
 		CacheName:      "USER_PROFILE:" + usernameText,
-		CacheNameIndex: redis_service.RedisCacheGlobal,
+		CacheNameIndex: redis_service.RedisCacheUser,
 	}
 	cacheData := rdb.PrepareCacheRead()
 	if cacheData != "" {

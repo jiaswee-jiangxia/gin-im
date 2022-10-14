@@ -14,13 +14,7 @@ import (
 const CacheNamePre = "cm_"
 
 const RedisCacheDefault = 0
-const RedisCacheSession = 1
-const RedisCacheGlobal = 2
-const RedisCacheStore = 3
-const RedisCacheLocal = 4
-const RedisCacheFpx = 5
-const RedisCacheEwallet = 8
-const RedisCacheMerchantStore = 13
+const RedisCacheUser = 1
 
 var RedisCacheExpired = map[string]time.Duration{
 	// 永远不过期的redis为 -1
