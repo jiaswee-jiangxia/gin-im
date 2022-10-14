@@ -26,10 +26,10 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-const DINE_IN = 0
-const DELIVERY = 1
-const TAKE_AWAY = 2
-const OTHERS = 3
+// GetUnixTimestamp 转换所有time.Time格式去Unix Timestamp
+func GetUnixTimestamp(t time.Time) int64 {
+	return t.Unix()
+}
 
 func ParseToken(str string) (*Claims, string) {
 	var claimsObj Claims
