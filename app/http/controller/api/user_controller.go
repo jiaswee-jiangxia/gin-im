@@ -104,7 +104,7 @@ func Register(context *gin.Context) {
 			// In JWT, the expiry time is expressed as unix milliseconds
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
-			Id:        strconv.Itoa(member.Id),
+			Id:        strconv.Itoa(int(member.Id)),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)

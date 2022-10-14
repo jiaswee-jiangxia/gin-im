@@ -34,7 +34,7 @@ type MainRegisterStruct struct {
 }
 
 type RegisterStruct struct {
-	Id       int    `gorm:"primary_key" json:"id"`
+	BaseModel
 	Username string `gorm:"column:username" json:"username"`
 	Contact  string `gorm:"column:contact" json:"contact"`
 	Email    string `gorm:"column:email" json:"email"`
