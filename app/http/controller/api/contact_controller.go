@@ -17,7 +17,7 @@ type CreateContactForm struct {
 
 func CreateContact(context *gin.Context) {
 	var createContactForm CreateContactForm
-	if err := context.ShouldBindJSON(&createContactForm); err != nil {
+	if err := context.ShouldBind(&createContactForm); err != nil {
 		response.ErrorParam(context, createContactForm)
 		return
 	}
@@ -104,7 +104,7 @@ type AcceptContactForm struct {
 
 func AcceptContact(context *gin.Context) {
 	var acceptContactForm AcceptContactForm
-	if err := context.ShouldBindJSON(&acceptContactForm); err != nil {
+	if err := context.ShouldBind(&acceptContactForm); err != nil {
 		response.ErrorParam(context, acceptContactForm)
 		return
 	}
@@ -173,7 +173,7 @@ type RemoveContactForm struct {
 
 func RemoveContact(context *gin.Context) {
 	var removeContactForm RemoveContactForm
-	if err := context.ShouldBindJSON(&removeContactForm); err != nil {
+	if err := context.ShouldBind(&removeContactForm); err != nil {
 		response.ErrorParam(context, removeContactForm)
 		return
 	}
@@ -248,7 +248,7 @@ type CreateGroupingForm struct {
 
 func CreateGrouping(context *gin.Context) {
 	var createGroupingForm CreateGroupingForm
-	if err := context.ShouldBindJSON(&createGroupingForm); err != nil {
+	if err := context.ShouldBind(&createGroupingForm); err != nil {
 		response.ErrorParam(context, createGroupingForm)
 		return
 	}
@@ -343,5 +343,51 @@ func SearchContact(context *gin.Context) {
 		"email":    targetUser.Email,
 		"contact":  targetUser.Contact,
 	})
+	return
+}
+
+type ContactListForm struct {
+}
+
+type ContactListItem struct {
+	Username string `json:"username"`
+	Status   string `json:"status"`
+}
+
+func ContactList(context *gin.Context) {
+	var contactListForm ContactListForm
+	var returnedContactList []ContactListItem
+	if err := context.ShouldBind(&contactListForm); err != nil {
+		response.ErrorParam(context, contactListForm)
+		return
+	}
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, "ok", nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	user, err := userService.FindUserByUsername()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
+		} else {
+			response.SuccessButFail(context, err.Error(), consts.CreateGroupingFailed, nil)
+		}
+		return
+	}
+	contactService := contacts_service.ContactsStruct{
+		UserId: strconv.Itoa(int(user.Id)),
+	}
+	list, err := contactService.GetContactList()
+	for _, item := range list {
+		returnedContactList = append(returnedContactList, ContactListItem{
+			Username: item.Username,
+			Status:   strconv.Itoa(int(item.Status)),
+		})
+	}
+	response.Success(context, consts.Success, returnedContactList)
 	return
 }

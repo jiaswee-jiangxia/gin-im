@@ -97,3 +97,16 @@ func (m *ContactsStruct) UpdateContactGrouping() (*model.Contacts, error) {
 	}
 	return u, nil
 }
+
+func (m *ContactsStruct) GetContactList() ([]*model.UserContacts, error) {
+	userId, _ := strconv.Atoi(m.UserId)
+	frdId, _ := strconv.Atoi(m.FriendId)
+	u, err := model.GetContactList(&model.Contacts{
+		UserId:   int64(userId),
+		FriendId: int64(frdId),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}

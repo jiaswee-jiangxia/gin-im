@@ -9,6 +9,12 @@ type Contacts struct {
 	Grouping string `gorm:"column:grouping" json:"grouping"`
 }
 
+type UserContacts struct {
+	Contacts
+	BaseModel
+	Username string `gorm:"column:username" json:"username"`
+}
+
 func GetContactsByBothId(userId string, friendId string) (*Contacts, error) {
 	var u *Contacts
 	err := db.Table("contacts").
@@ -34,7 +40,21 @@ func Updates(g *Contacts, updates interface{}) (*Contacts, error) {
 	err := db.Table("contacts").Model(&g).
 		Where("user_id = ?", g.UserId).
 		Where("friend_id = ?", g.FriendId).
-		Updates(updates).Debug().Error
+		Updates(updates).Error
+	if err != nil {
+		return nil, err
+	}
+	return g, nil
+}
+
+func GetContactList(u *Contacts) ([]*UserContacts, error) {
+	var g []*UserContacts
+	err := db.Table("contacts").
+		Joins("inner join users on users.id = contacts.friend_id").
+		Where("user_id = ?", u.UserId).
+		Where("status = ?", 1).
+		Select("contacts.*, users.username").
+		Find(&g).Error
 	if err != nil {
 		return nil, err
 	}
