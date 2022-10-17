@@ -29,3 +29,14 @@ func CreateNewContact(u *Contacts) (*Contacts, error) {
 	}
 	return u, nil
 }
+
+func Updates(g *Contacts, updates interface{}) (*Contacts, error) {
+	err := db.Table("contacts").Model(&g).
+		Where("user_id = ?", g.UserId).
+		Where("friend_id = ?", g.FriendId).
+		Updates(updates).Debug().Error
+	if err != nil {
+		return nil, err
+	}
+	return g, nil
+}

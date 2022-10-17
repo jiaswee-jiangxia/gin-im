@@ -82,3 +82,72 @@ func CreateContact(context *gin.Context) {
 	}
 	return
 }
+
+type AcceptContactForm struct {
+	TargetUsername string `json:"target_username" binding:"required"`
+}
+
+func AcceptContact(context *gin.Context) {
+	var acceptContactForm AcceptContactForm
+	if err := context.ShouldBindJSON(&acceptContactForm); err != nil {
+		response.ErrorParam(context, acceptContactForm)
+		return
+	}
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, "ok", nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	user, err := userService.FindUserByUsername()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
+		} else {
+			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+		}
+		return
+	}
+	userService = user_service.TokenStruct{
+		Username: acceptContactForm.TargetUsername,
+	}
+	targetUser, err := userService.FindUserByUsername()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
+		} else {
+			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+		}
+		return
+	}
+
+	if user.Id == targetUser.Id {
+		response.SuccessButFail(context, consts.CreateContactCannotAddOwnAcc, consts.CreateContactCannotAddOwnAcc, nil)
+		return
+	}
+
+	contactService := contacts_service.ContactsStruct{
+		UserId:   strconv.Itoa(int(targetUser.Id)),
+		FriendId: strconv.Itoa(int(user.Id)),
+		Status:   1,
+	}
+
+	contact, err := contactService.GetContactsByBothId()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), consts.ContactNotFound, nil)
+	}
+
+	if contact.Status == 0 {
+		aContact, err := contactService.AcceptContact()
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), consts.AcceptContactFailed, nil)
+		} else {
+			response.Success(context, consts.AcceptContactSuccess, aContact.UpdatedAt)
+		}
+	} else {
+		response.SuccessButFail(context, consts.AcceptContactFailed, consts.AcceptContactFailed, nil)
+	}
+	return
+}

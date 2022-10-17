@@ -68,7 +68,7 @@ func InitApiRouter() *gin.Engine {
 				//jwtGroupApi.GET("/lookup", api.GetStoreSearch)
 				jwtGroupApi.POST("/create", api.CreateContact)
 				//jwtGroupApi.POST("/grouping", api.GetStoreList)
-				//jwtGroupApi.POST("/accept", api.GetStoreSearch)
+				jwtGroupApi.POST("/accept", api.AcceptContact)
 				//jwtGroupApi.POST("/remove", api.GetStoreSearch)
 			}
 		}

@@ -44,3 +44,26 @@ func (m *ContactsStruct) CreateNewContact() (*model.Contacts, error) {
 	}
 	return u, nil
 }
+
+func (m *ContactsStruct) AcceptContact() (*model.Contacts, error) {
+	userId, _ := strconv.Atoi(m.UserId)
+	frdId, _ := strconv.Atoi(m.FriendId)
+	u, err := model.Updates(&model.Contacts{
+		UserId:   int64(userId),
+		FriendId: int64(frdId),
+	}, map[string]interface{}{
+		"status": m.Status,
+	})
+	if err != nil {
+		return nil, err
+	}
+	_, err = model.CreateNewContact(&model.Contacts{
+		UserId:   int64(frdId),
+		FriendId: int64(userId),
+		Status:   m.Status,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}

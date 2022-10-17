@@ -27,4 +27,7 @@ var (
 	GroupDoesNotExist                 = "group_does_not_exist"
 	DisbandGroupSuccess               = "disband_group_success"
 	DisbandGroupFailed                = "disband_group_failed"
+	ContactNotFound                   = "contact_not_found"
+	AcceptContactFailed               = "accept_contact_failed"
+	AcceptContactSuccess              = "accept_contact_success"
 )
