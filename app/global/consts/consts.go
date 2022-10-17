@@ -15,11 +15,11 @@ const (
 	ServerOccurredErrorMsg  string = "服务器内部发生代码执行错误, "
 
 	// token相关
-	JwtTokenOK            int    = 200100                      //token有效
-	JwtTokenInvalid       int    = -400100                     //无效的token
-	JwtTokenExpired       int    = -400101                     //过期的token
-	JwtTokenFormatErrCode int    = -400102                     //提交的 token 格式错误
-	JwtTokenFormatErrMsg  string = "提交的 token 格式错误"            //提交的 token 格式错误
+	JwtTokenOK            int    = 200100                                  //token有效
+	JwtTokenInvalid       int    = -400100                                 //无效的token
+	JwtTokenExpired       int    = -400101                                 //过期的token
+	JwtTokenFormatErrCode int    = -400102                                 //提交的 token 格式错误
+	JwtTokenFormatErrMsg  string = "提交的 token 格式错误"                 //提交的 token 格式错误
 	JwtTokenMustValid     string = "token为必填项,请在请求header部分提交!" //提交的 token 格式错误
 
 	//SnowFlake 雪花算法
@@ -76,4 +76,7 @@ const (
 	//CaptchaCheckOkCode            int    = 200
 	CaptchaCheckFailCode int    = -400355
 	CaptchaCheckFailMsg  string = "验证码校验失败"
+
+	//查找用户
+	UserNotFound string = "获取验证码：提交的验证码参数无效,请检查验证码ID以及文件名后缀是否完整"
 )

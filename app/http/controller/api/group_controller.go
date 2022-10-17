@@ -34,7 +34,7 @@ func CreateGroup(context *gin.Context) {
 	}
 	newGroup, err := groupService.CreateGroup() // Create new group
 	if err != nil || newGroup.Id <= 0 {
-		response.SuccessButFail(context, "failed to create group", nil)
+		response.SuccessButFail(context, "failed to create group", "failed to create group", nil)
 		return
 	}
 	response.Success(context, "ok", newGroup)
@@ -62,12 +62,12 @@ func ListGroupAdmin(context *gin.Context) {
 	}
 	groupInfo, err := groupService.GetGroupInfo() // Get group info
 	if err != nil {
-		response.SuccessButFail(context, "failed to get group info", err)
+		response.SuccessButFail(context, "failed to get group info", "failed to get group info", err)
 		return
 	}
 	adminList, err := groupService.GetGroupAdmin() // Get group admin list
 	if err != nil {
-		response.SuccessButFail(context, "failed to get group info", err)
+		response.SuccessButFail(context, "failed to get group info", "failed to get group info", err)
 		return
 	}
 	response.Success(context, "ok", &GroupInfoReplyStruct{
@@ -89,12 +89,12 @@ func ListGroupMember(context *gin.Context) {
 	}
 	groupInfo, err := groupService.GetGroupInfo() // Get Group Info
 	if err != nil {
-		response.SuccessButFail(context, "failed to get group info", err)
+		response.SuccessButFail(context, "failed to get group info", "failed to get group info", err)
 		return
 	}
 	adminList, err := groupService.GetGroupAdmin() // Get Group Admin List
 	if err != nil {
-		response.SuccessButFail(context, "failed to get group info", err)
+		response.SuccessButFail(context, "failed to get group info", "failed to get group info", err)
 		return
 	}
 	response.Success(context, "ok", &GroupInfoReplyStruct{
@@ -121,28 +121,28 @@ func AddGroupMember(context *gin.Context) {
 	}
 	check, _ := groupService.GetGroupInfo() // Check if group exist
 	if check.Id <= 0 {
-		response.SuccessButFail(context, "group does not exist", "0")
+		response.SuccessButFail(context, "group does not exist", "group does not exist", "0")
 		return
 	}
 	if !CheckGroupAuthority(context, req.GroupID) {
-		response.SuccessButFail(context, "no authority", "0")
+		response.SuccessButFail(context, "no authority", "no authority", "0")
 		return
 	}
 	memberList, err := groupService.GetGroupMember() // Check if member already in the group
 	if err != nil {
-		response.SuccessButFail(context, "failed to add group member", err)
+		response.SuccessButFail(context, "failed to add group member", "failed to add group member", err)
 		return
 	}
 	for _, i := range req.UserList {
 		if memberExist(memberList, i) {
-			response.SuccessButFail(context, "member already in group", err)
+			response.SuccessButFail(context, "member already in group", "member already in group", err)
 			return
 		}
 	}
 	for _, i := range req.UserList { // Add user into the group
 		err := groupService.AddGroupMember(i)
 		if err != nil {
-			response.SuccessButFail(context, "failed to add group member", err)
+			response.SuccessButFail(context, "failed to add group member", "failed to add group member", err)
 			return
 		}
 	}
@@ -167,25 +167,25 @@ func SetGroupAdmin(context *gin.Context) {
 	}
 	check, _ := groupService.GetGroupInfo() // Check if group exist
 	if check.Id <= 0 {
-		response.SuccessButFail(context, "group does not exist", "0")
+		response.SuccessButFail(context, "group does not exist", "group does not exist", "0")
 		return
 	}
 	if !CheckGroupAuthority(context, req.GroupID) { // Check if user is admin or owner
-		response.SuccessButFail(context, "no authority", "0")
+		response.SuccessButFail(context, "no authority", "no authority", "0")
 		return
 	}
 	memberList, err := groupService.GetGroupMember()
 	if err != nil {
-		response.SuccessButFail(context, "set admin failed", "0")
+		response.SuccessButFail(context, "set admin failed", "set admin failed", "0")
 	}
 	for _, v := range req.MemberUsername { // Check if target member is in group
 		if !memberExist(memberList, v) {
-			response.SuccessButFail(context, "member not in group", "0")
+			response.SuccessButFail(context, "member not in group", "member not in group", "0")
 			return
 		}
 		err = groupService.SetGroupAdmin(v)
 		if err != nil {
-			response.SuccessButFail(context, "set admin failed", "0")
+			response.SuccessButFail(context, "set admin failed", "set admin failed", "0")
 			return
 		}
 	}
@@ -211,24 +211,24 @@ func SetGroupOwner(context *gin.Context) {
 	}
 	check, _ := groupService.GetGroupInfo() // Check if group exist
 	if check.Id <= 0 {
-		response.SuccessButFail(context, "group does not exist", "0")
+		response.SuccessButFail(context, "group does not exist", "group does not exist", "0")
 		return
 	}
 	if !CheckGroupAuthority(context, req.GroupID) { // Check if user is admin or owner
-		response.SuccessButFail(context, "no authority", "0")
+		response.SuccessButFail(context, "no authority", "no authority", "0")
 		return
 	}
 	memberList, err := groupService.GetGroupMember()
 	if err != nil {
-		response.SuccessButFail(context, "set owner failed", "0")
+		response.SuccessButFail(context, "set owner failed", "set owner failed", "0")
 	}
 	if !memberExist(memberList, req.MemberUsername) { // Check if target member is in group
-		response.SuccessButFail(context, "member not in group", "0")
+		response.SuccessButFail(context, "member not in group", "member not in group", "0")
 		return
 	}
 	err = groupService.SetGroupOwner(req.MemberUsername)
 	if err != nil {
-		response.SuccessButFail(context, "set owner failed", "0")
+		response.SuccessButFail(context, "set owner failed", "set owner failed", "0")
 		return
 	}
 	response.Success(context, "ok", "0")
@@ -253,25 +253,25 @@ func RemoveGroupMember(context *gin.Context) {
 	}
 	check, _ := groupService.GetGroupInfo() // Check if group exist
 	if check.Id <= 0 {
-		response.SuccessButFail(context, "group does not exist", "0")
+		response.SuccessButFail(context, "group does not exist", "group does not exist", "0")
 		return
 	}
 	if !CheckGroupAuthority(context, req.GroupID) { // Check if user is admin or owner
-		response.SuccessButFail(context, "no authority", "0")
+		response.SuccessButFail(context, "no authority", "no authority", "0")
 		return
 	}
 	memberList, err := groupService.GetGroupMember()
 	if err != nil {
-		response.SuccessButFail(context, "remove member failed", "0")
+		response.SuccessButFail(context, "remove member failed", "remove member failed", "0")
 	}
 	for _, v := range req.MemberUsername { // Check if target member is in group
 		if !memberExist(memberList, v) {
-			response.SuccessButFail(context, "member not in group", "0")
+			response.SuccessButFail(context, "member not in group", "member not in group", "0")
 			return
 		}
 		err = groupService.RemoveGroupMember(v)
 		if err != nil {
-			response.SuccessButFail(context, "remove member failed", "0")
+			response.SuccessButFail(context, "remove member failed", "remove member failed", "0")
 			return
 		}
 	}
@@ -296,16 +296,16 @@ func DisbandGroup(context *gin.Context) {
 	}
 	check, _ := groupService.GetGroupInfo() // Check if group exist
 	if check.Id <= 0 {
-		response.SuccessButFail(context, "group does not exist", "0")
+		response.SuccessButFail(context, "group does not exist", "group does not exist", "0")
 		return
 	}
 	if !CheckGroupAuthority(context, req.GroupID) { // Check if user is admin or owner
-		response.SuccessButFail(context, "no authority", "0")
+		response.SuccessButFail(context, "no authority", "no authority", "0")
 		return
 	}
 	err := groupService.DisbandGroup()
 	if err != nil {
-		response.SuccessButFail(context, "failed to disband group", "0")
+		response.SuccessButFail(context, "failed to disband group", "failed to disband group", "0")
 		return
 	}
 	response.Success(context, "ok", "0")

@@ -18,9 +18,8 @@ const RedisCacheUser = 1
 
 var RedisCacheExpired = map[string]time.Duration{
 	// 永远不过期的redis为 -1
-	"STORE_DETAILS":        -1,
-	"STORE_MENU_DETAILS":   -1,
-	"MEMBER_CART_CHECKOUT": 1800,
+	//"STORE_DETAILS":        -1,
+	//"MEMBER_CART_CHECKOUT": 1800,
 }
 
 type RedisStruct struct {

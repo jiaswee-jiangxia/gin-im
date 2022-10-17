@@ -46,18 +46,30 @@ func InitApiRouter() *gin.Engine {
 				jwtUserGroup.GET("/profile", api.Profile)
 			}
 		}
-		groupApi := vApi.Group("/group")
+		groupsApi := vApi.Group("/group")
+		{
+			jwtGroupsApi := groupsApi.Use(jwt.JWT())
+			{
+				jwtGroupsApi.POST("/create", api.CreateGroup)
+				jwtGroupsApi.POST("/admin/list", api.ListGroupAdmin)
+				jwtGroupsApi.POST("/member/list", api.ListGroupMember)
+				jwtGroupsApi.POST("/addmember", api.AddGroupMember)
+				jwtGroupsApi.POST("/setadmin", api.SetGroupAdmin)
+				jwtGroupsApi.POST("/setowner", api.SetGroupOwner)
+				jwtGroupsApi.POST("/member/remove", api.RemoveGroupMember)
+				jwtGroupsApi.POST("/disband", api.DisbandGroup)
+			}
+		}
+		groupApi := vApi.Group("/contact")
 		{
 			jwtGroupApi := groupApi.Use(jwt.JWT())
 			{
-				jwtGroupApi.POST("/create", api.CreateGroup)
-				jwtGroupApi.POST("/admin/list", api.ListGroupAdmin)
-				jwtGroupApi.POST("/member/list", api.ListGroupMember)
-				jwtGroupApi.POST("/addmember", api.AddGroupMember)
-				jwtGroupApi.POST("/setadmin", api.SetGroupAdmin)
-				jwtGroupApi.POST("/setowner", api.SetGroupOwner)
-				jwtGroupApi.POST("/member/remove", api.RemoveGroupMember)
-				jwtGroupApi.POST("/disband", api.DisbandGroup)
+				//jwtGroupApi.GET("/", api.GetStoreSearch)
+				//jwtGroupApi.GET("/lookup", api.GetStoreSearch)
+				jwtGroupApi.POST("/create", api.CreateContact)
+				//jwtGroupApi.POST("/grouping", api.GetStoreList)
+				//jwtGroupApi.POST("/accept", api.GetStoreSearch)
+				//jwtGroupApi.POST("/remove", api.GetStoreSearch)
 			}
 		}
 	}

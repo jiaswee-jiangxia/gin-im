@@ -101,13 +101,13 @@ func CheckCaptchaAuth() gin.HandlerFunc {
 		captchaId := c.PostForm(captchaIdKey)
 		value := c.PostForm(captchaValueKey)
 		if captchaId == "" || value == "" {
-			response.Fail(c, consts.CaptchaCheckParamsInvalidCode, consts.CaptchaCheckParamsInvalidMsg, "")
+			response.Fail(c, consts.CaptchaCheckParamsInvalidCode, consts.CaptchaCheckParamsInvalidMsg, consts.CaptchaCheckParamsInvalidMsg, "")
 			return
 		}
 		if captcha.VerifyString(captchaId, value) {
 			c.Next()
 		} else {
-			response.Fail(c, consts.CaptchaCheckFailCode, consts.CaptchaCheckFailMsg, "")
+			response.Fail(c, consts.CaptchaCheckFailCode, consts.CaptchaCheckFailMsg, consts.CaptchaCheckFailMsg, "")
 		}
 	}
 }
