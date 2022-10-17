@@ -309,3 +309,39 @@ func CreateGrouping(context *gin.Context) {
 	}
 	return
 }
+
+type SearchContactForm struct {
+	TargetUsername string `form:"target_username" json:"target_username" binding:"required"`
+}
+
+func SearchContact(context *gin.Context) {
+	var searchContactForm SearchContactForm
+	if err := context.ShouldBind(&searchContactForm); err != nil {
+		response.ErrorParam(context, searchContactForm)
+		return
+	}
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, "ok", nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+	if usernameText == searchContactForm.TargetUsername {
+		response.SuccessButFail(context, consts.UserNotFound, consts.UserNotFound, nil)
+		return
+	}
+	userService := user_service.TokenStruct{
+		Username: searchContactForm.TargetUsername,
+	}
+	targetUser, err := userService.FindUserByUsername()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
+		return
+	}
+
+	response.Success(context, consts.UserFound, map[string]string{
+		"username": targetUser.Username,
+		"email":    targetUser.Email,
+		"contact":  targetUser.Contact,
+	})
+	return
+}

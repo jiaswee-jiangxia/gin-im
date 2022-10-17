@@ -65,7 +65,7 @@ func InitApiRouter() *gin.Engine {
 			jwtGroupApi := groupApi.Use(jwt.JWT())
 			{
 				//jwtGroupApi.GET("/", api.GetStoreSearch)
-				//jwtGroupApi.GET("/lookup", api.GetStoreSearch)
+				jwtGroupApi.GET("/lookup", api.SearchContact)
 				jwtGroupApi.POST("/create", api.CreateContact)
 				jwtGroupApi.POST("/grouping", api.CreateGrouping)
 				jwtGroupApi.POST("/accept", api.AcceptContact)
