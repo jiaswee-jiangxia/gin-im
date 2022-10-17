@@ -39,7 +39,7 @@ func (c *Captcha) GetImg(context *gin.Context) {
 	ext := path.Ext(file)
 	id := file[:len(file)-len(ext)]
 	if ext == "" || captchaId == "" {
-		response.Fail(context, consts.CaptchaGetParamsInvalidCode, consts.CaptchaGetParamsInvalidMsg, "")
+		response.Fail(context, consts.CaptchaGetParamsInvalidCode, consts.CaptchaGetParamsInvalidMsg, consts.CaptchaGetParamsInvalidMsg, "")
 		return
 	}
 
@@ -69,12 +69,12 @@ func (c *Captcha) CheckCode(context *gin.Context) {
 	value := context.Param(captchaValueKey)
 
 	if captchaId == "" || value == "" {
-		response.Fail(context, consts.CaptchaCheckParamsInvalidCode, consts.CaptchaCheckParamsInvalidMsg, "")
+		response.Fail(context, consts.CaptchaCheckParamsInvalidCode, consts.CaptchaCheckParamsInvalidMsg, consts.CaptchaCheckParamsInvalidMsg, "")
 		return
 	}
 	if captcha.VerifyString(captchaId, value) {
 		response.Success(context, consts.CaptchaCheckOkMsg, "")
 	} else {
-		response.Fail(context, consts.CaptchaCheckFailCode, consts.CaptchaCheckFailMsg, "")
+		response.Fail(context, consts.CaptchaCheckFailCode, consts.CaptchaCheckFailMsg, consts.CaptchaCheckFailMsg, "")
 	}
 }

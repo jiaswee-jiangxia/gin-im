@@ -19,7 +19,7 @@ func (c Connect) CheckParams(context *gin.Context) {
 
 	// 1. 首先检查是否开启websocket服务配置（在配置项中开启）
 	if variable.ConfigYml.GetInt("Websocket.Start") != 1 {
-		response.Fail(context, consts.WsServerNotStartCode, consts.WsServerNotStartMsg, "")
+		response.Fail(context, consts.WsServerNotStartCode, consts.WsServerNotStartMsg, consts.WsServerNotStartMsg, "")
 		return
 	}
 	//2.基本的验证规则没有通过
@@ -38,7 +38,7 @@ func (c Connect) CheckParams(context *gin.Context) {
 		return
 	} else {
 		if serviceWs, ok := (&controllerWs.Ws{}).OnOpen(extraAddBindDataContext); ok == false {
-			response.Fail(context, consts.WsOpenFailCode, consts.WsOpenFailMsg, "")
+			response.Fail(context, consts.WsOpenFailCode, consts.WsOpenFailMsg, consts.WsOpenFailMsg, "")
 		} else {
 			(&controllerWs.Ws{}).OnMessage(serviceWs, extraAddBindDataContext) // 注意这里传递的service_ws必须是调用open返回的，必须保证的ws对象的一致性
 		}

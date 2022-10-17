@@ -37,7 +37,7 @@ func Login(context *gin.Context) {
 	}
 	member, err := userService.UserLogin()
 	if err != nil || member.Id <= 0 {
-		response.SuccessButFail(context, "invalid_username_password", nil)
+		response.SuccessButFail(context, "invalid_username_password", "invalid_username_password", nil)
 		return
 	}
 	// Create the JWT claims, which includes the username and expiry time
@@ -53,7 +53,7 @@ func Login(context *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	signedString, errSignedString := token.SignedString(variable.PrivateKey)
 	if errSignedString != nil {
-		response.SuccessButFail(context, errSignedString.Error(), nil)
+		response.SuccessButFail(context, errSignedString.Error(), "ok", nil)
 		return
 	}
 	response.Success(context, "ok", signedString)
@@ -75,7 +75,7 @@ func Register(context *gin.Context) {
 		return
 	}
 	if creds.Password != creds.ConfirmationPassword {
-		response.SuccessButFail(context, "wrong_confirmation_password", nil)
+		response.SuccessButFail(context, "wrong_confirmation_password", "ok", nil)
 		return
 	}
 
@@ -94,7 +94,7 @@ func Register(context *gin.Context) {
 	member, err := userService.UserRegister()
 	if err != nil {
 		txUser.Rollback()
-		response.SuccessButFail(context, err.Error(), nil)
+		response.SuccessButFail(context, err.Error(), "ok", nil)
 		return
 	}
 	// Create the JWT claims, which includes the username and expiry time
@@ -112,7 +112,7 @@ func Register(context *gin.Context) {
 	if errSignedString != nil {
 		txUser.Rollback()
 		tx.Rollback()
-		response.SuccessButFail(context, errSignedString.Error(), nil)
+		response.SuccessButFail(context, errSignedString.Error(), "ok", nil)
 		return
 	}
 	txUser.Commit()
@@ -143,7 +143,7 @@ func Profile(context *gin.Context) {
 	}
 	profile, err := userService.UserProfile()
 	if err != nil {
-		response.SuccessButFail(context, err.Error(), nil)
+		response.SuccessButFail(context, err.Error(), "ok", nil)
 		return
 	}
 	rdb.CacheValue = profile

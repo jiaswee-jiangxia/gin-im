@@ -33,7 +33,7 @@ func (r RefreshToken) CheckParams(context *gin.Context) {
 		errs := gin.H{
 			"tips": "Token不合法，token请放置在header头部分，按照按=>键提交，例如：Authorization：Bearer 你的实际token....",
 		}
-		response.Fail(context, consts.JwtTokenFormatErrCode, consts.JwtTokenFormatErrMsg, errs)
+		response.Fail(context, consts.JwtTokenFormatErrCode, consts.JwtTokenFormatErrMsg, consts.JwtTokenFormatErrMsg, errs)
 	}
 
 }

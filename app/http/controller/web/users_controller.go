@@ -24,11 +24,11 @@ func (u *Users) Register(context *gin.Context) {
 	if curd.CreateUserCurdFactory().Register(userName, pass, userIp) {
 		response.Success(context, consts.CurdStatusOkMsg, "")
 	} else {
-		response.Fail(context, consts.CurdRegisterFailCode, consts.CurdRegisterFailMsg, "")
+		response.Fail(context, consts.CurdRegisterFailCode, consts.CurdRegisterFailMsg, consts.CurdRegisterFailMsg, "")
 	}
 }
 
-//  2.用户登录
+// 2.用户登录
 func (u *Users) Login(context *gin.Context) {
 	userName := context.GetString(consts.ValidatorPrefix + "user_name")
 	pass := context.GetString(consts.ValidatorPrefix + "pass")
@@ -54,7 +54,7 @@ func (u *Users) Login(context *gin.Context) {
 			}
 		}
 	}
-	response.Fail(context, consts.CurdLoginFailCode, consts.CurdLoginFailMsg, "")
+	response.Fail(context, consts.CurdLoginFailCode, consts.CurdLoginFailMsg, consts.CurdLoginFailMsg, "")
 }
 
 // 刷新用户token
@@ -66,7 +66,7 @@ func (u *Users) RefreshToken(context *gin.Context) {
 		}
 		response.Success(context, consts.CurdStatusOkMsg, res)
 	} else {
-		response.Fail(context, consts.CurdRefreshTokenFailCode, consts.CurdRefreshTokenFailMsg, "")
+		response.Fail(context, consts.CurdRefreshTokenFailCode, consts.CurdRefreshTokenFailMsg, consts.CurdRefreshTokenFailMsg, "")
 	}
 }
 
@@ -75,7 +75,7 @@ func (u *Users) RefreshToken(context *gin.Context) {
 // 参考地址：https://gitee.com/daitougege/GinSkeleton/blob/master/docs/concise.md
 // 您也可以参考 Admin 项目地址：https://gitee.com/daitougege/gin-skeleton-admin-backend/ 中， app/model/  提供的示例语法
 
-//3.用户查询（show）
+// 3.用户查询（show）
 func (u *Users) Show(context *gin.Context) {
 	userName := context.GetString(consts.ValidatorPrefix + "user_name")
 	page := context.GetFloat64(consts.ValidatorPrefix + "page")
@@ -85,11 +85,11 @@ func (u *Users) Show(context *gin.Context) {
 	if counts > 0 && showlist != nil {
 		response.Success(context, consts.CurdStatusOkMsg, gin.H{"counts": counts, "list": showlist})
 	} else {
-		response.Fail(context, consts.CurdSelectFailCode, consts.CurdSelectFailMsg, "")
+		response.Fail(context, consts.CurdSelectFailCode, consts.CurdSelectFailMsg, consts.CurdSelectFailMsg, "")
 	}
 }
 
-//4.用户新增(store)
+// 4.用户新增(store)
 func (u *Users) Store(context *gin.Context) {
 	userName := context.GetString(consts.ValidatorPrefix + "user_name")
 	pass := context.GetString(consts.ValidatorPrefix + "pass")
@@ -100,11 +100,11 @@ func (u *Users) Store(context *gin.Context) {
 	if curd.CreateUserCurdFactory().Store(userName, pass, realName, phone, remark) {
 		response.Success(context, consts.CurdStatusOkMsg, "")
 	} else {
-		response.Fail(context, consts.CurdCreatFailCode, consts.CurdCreatFailMsg, "")
+		response.Fail(context, consts.CurdCreatFailCode, consts.CurdCreatFailMsg, consts.CurdCreatFailMsg, "")
 	}
 }
 
-//5.用户更新(update)
+// 5.用户更新(update)
 func (u *Users) Update(context *gin.Context) {
 	userId := context.GetFloat64(consts.ValidatorPrefix + "id")
 	userName := context.GetString(consts.ValidatorPrefix + "user_name")
@@ -118,17 +118,17 @@ func (u *Users) Update(context *gin.Context) {
 	if curd.CreateUserCurdFactory().Update(int(userId), userName, pass, realName, phone, remark, userIp) {
 		response.Success(context, consts.CurdStatusOkMsg, "")
 	} else {
-		response.Fail(context, consts.CurdUpdateFailCode, consts.CurdUpdateFailMsg, "")
+		response.Fail(context, consts.CurdUpdateFailCode, consts.CurdUpdateFailMsg, consts.CurdUpdateFailMsg, "")
 	}
 
 }
 
-//6.删除记录
+// 6.删除记录
 func (u *Users) Destroy(context *gin.Context) {
 	userId := context.GetFloat64(consts.ValidatorPrefix + "id")
 	if base.CreateUserFactory("").Destroy(int(userId)) {
 		response.Success(context, consts.CurdStatusOkMsg, "")
 	} else {
-		response.Fail(context, consts.CurdDeleteFailCode, consts.CurdDeleteFailMsg, "")
+		response.Fail(context, consts.CurdDeleteFailCode, consts.CurdDeleteFailMsg, consts.CurdDeleteFailMsg, "")
 	}
 }

@@ -45,15 +45,18 @@ func InitApiRouter() *gin.Engine {
 				jwtUserGroup.GET("/profile", api.Profile)
 			}
 		}
-		//groupApi := vApi.Group("/group")
-		//{
-		//jwtGroupApi := groupApi.Use(jwt.JWT())
-		//{
-		//jwtGroupApi.GET("/menu", api.GetMenu)
-		//jwtGroupApi.GET("/list", api.GetStoreList)
-		//jwtGroupApi.GET("/search", api.GetStoreSearch)
-		//}
-		//}
+		groupApi := vApi.Group("/contact")
+		{
+			jwtGroupApi := groupApi.Use(jwt.JWT())
+			{
+				//jwtGroupApi.GET("/", api.GetStoreSearch)
+				//jwtGroupApi.GET("/lookup", api.GetStoreSearch)
+				jwtGroupApi.POST("/create", api.CreateContact)
+				//jwtGroupApi.POST("/grouping", api.GetStoreList)
+				//jwtGroupApi.POST("/accept", api.GetStoreSearch)
+				//jwtGroupApi.POST("/remove", api.GetStoreSearch)
+			}
+		}
 	}
 	return router
 }

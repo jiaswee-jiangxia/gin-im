@@ -30,10 +30,18 @@ func (m *TokenStruct) UserRegister() (*model.RegisterStruct, error) {
 	return member, nil
 }
 
-func (m *TokenStruct) UserProfile() (*model.UserStruct, error) {
-	profile, err := model.GetProfile(m.Username)
+func (m *TokenStruct) UserProfile() (*model.Users, error) {
+	profile, err := model.GetUserByUsername(m.Username)
 	if err != nil {
 		return nil, err
 	}
 	return profile, nil
+}
+
+func (m *TokenStruct) FindUserByUsername() (*model.Users, error) {
+	u, err := model.GetUserByUsername(m.Username)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }
