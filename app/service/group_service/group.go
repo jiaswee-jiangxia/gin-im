@@ -153,6 +153,7 @@ func (m *GroupStruct) RemoveGroupMember(memberUsename string) error {
 	if err != nil {
 		return err
 	}
+	// Refresh member list
 	redisService := redis.RedisStruct{
 		CacheName:      "GROUP_MEMBER",
 		CacheNameIndex: redis.RedisCacheGroup,
@@ -163,6 +164,19 @@ func (m *GroupStruct) RemoveGroupMember(memberUsename string) error {
 		return err
 	}
 	redisService.CacheValue = g
+	redisService.PrepareCacheWrite()
+
+	// Refresh admin list
+	redisService = redis.RedisStruct{
+		CacheName:      "GROUP_ADMIN",
+		CacheNameIndex: redis.RedisCacheGroup,
+		CacheKey:       strconv.FormatInt(m.Id, 10),
+	}
+	g2, err := model.GetGroupAdminInfo(m.Id)
+	if err != nil {
+		return err
+	}
+	redisService.CacheValue = g2
 	redisService.PrepareCacheWrite()
 	return nil
 }
