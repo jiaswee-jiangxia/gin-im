@@ -33,4 +33,7 @@ var (
 	RemoveContactFailed               = "remove_contact_failed"
 	RemoveContactSuccess              = "remove_contact_success"
 	ContactCannotRemoveOwnAcc         = "contact_cannot_remove_own_acc"
+	CannotCreateGroupingOwnAcc        = "cannot_create_grouping_own_acc"
+	CreateGroupingFailed              = "create_grouping_failed"
+	CreateGroupingSuccess             = "create_grouping_success"
 )
