@@ -1,14 +1,15 @@
 package routers
 
 import (
-	"github.com/gin-contrib/pprof"
-	"github.com/gin-gonic/gin"
 	"goskeleton/app/global/variable"
 	"goskeleton/app/http/controller/api"
 	"goskeleton/app/http/middleware/cors"
 	"goskeleton/app/http/middleware/jwt"
 	"io"
 	"os"
+
+	"github.com/gin-contrib/pprof"
+	"github.com/gin-gonic/gin"
 )
 
 // 该路由主要设置门户类网站等前台路由
@@ -43,6 +44,20 @@ func InitApiRouter() *gin.Engine {
 			jwtUserGroup := userApi.Use(jwt.JWT())
 			{
 				jwtUserGroup.GET("/profile", api.Profile)
+			}
+		}
+		groupsApi := vApi.Group("/group")
+		{
+			jwtGroupsApi := groupsApi.Use(jwt.JWT())
+			{
+				jwtGroupsApi.POST("/create", api.CreateGroup)
+				jwtGroupsApi.POST("/admin/list", api.ListGroupAdmin)
+				jwtGroupsApi.POST("/member/list", api.ListGroupMember)
+				jwtGroupsApi.POST("/addmember", api.AddGroupMember)
+				jwtGroupsApi.POST("/setadmin", api.SetGroupAdmin)
+				jwtGroupsApi.POST("/setowner", api.SetGroupOwner)
+				jwtGroupsApi.POST("/member/remove", api.RemoveGroupMember)
+				jwtGroupsApi.POST("/disband", api.DisbandGroup)
 			}
 		}
 		groupApi := vApi.Group("/contact")
