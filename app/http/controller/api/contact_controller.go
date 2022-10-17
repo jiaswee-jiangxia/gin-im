@@ -61,13 +61,13 @@ func CreateContact(context *gin.Context) {
 		FriendId: strconv.Itoa(int(targetUser.Id)),
 	}
 
-	_, err = contactService.GetContactsByBothId()
+	frdStatus := 0
+	if targetUser.BFVerified == 0 {
+		frdStatus = 1
+	}
+	contact, err := contactService.GetContactsByBothId()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			frdStatus := 0
-			if targetUser.BFVerified == 0 {
-				frdStatus = 1
-			}
 			contactService.Status = int64(frdStatus)
 			_, err = contactService.CreateNewContact()
 			if err != nil {
@@ -78,7 +78,22 @@ func CreateContact(context *gin.Context) {
 			response.SuccessButFail(context, err.Error(), consts.CreateContactSearchContactCrashed, nil)
 		}
 	} else {
-		response.SuccessButFail(context, consts.CreateContactRequestDuplicated, consts.CreateContactRequestDuplicated, nil)
+		if contact.Status > 1 {
+			response.SuccessButFail(context, consts.CreateContactRequestDuplicated, consts.CreateContactRequestDuplicated, nil)
+		} else {
+			contactService.Status = int64(frdStatus)
+			_, err = contactService.UpdateContact()
+			if err != nil {
+				response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+			}
+			contactService.UserId = strconv.Itoa(int(targetUser.Id))
+			contactService.FriendId = strconv.Itoa(int(user.Id))
+			_, err = contactService.UpdateContact()
+			if err != nil {
+				response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+			}
+		}
+		response.Success(context, consts.CreateContactSuccess, nil)
 	}
 	return
 }
@@ -148,6 +163,80 @@ func AcceptContact(context *gin.Context) {
 		}
 	} else {
 		response.SuccessButFail(context, consts.AcceptContactFailed, consts.AcceptContactFailed, nil)
+	}
+	return
+}
+
+type RemoveContactForm struct {
+	TargetUsername string `json:"target_username" binding:"required"`
+}
+
+func RemoveContact(context *gin.Context) {
+	var removeContactForm RemoveContactForm
+	if err := context.ShouldBindJSON(&removeContactForm); err != nil {
+		response.ErrorParam(context, removeContactForm)
+		return
+	}
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, "ok", nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	user, err := userService.FindUserByUsername()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
+		} else {
+			response.SuccessButFail(context, err.Error(), consts.RemoveGroupMemberFailed, nil)
+		}
+		return
+	}
+	userService = user_service.TokenStruct{
+		Username: removeContactForm.TargetUsername,
+	}
+	targetUser, err := userService.FindUserByUsername()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
+		} else {
+			response.SuccessButFail(context, err.Error(), consts.RemoveGroupMemberFailed, nil)
+		}
+		return
+	}
+
+	if user.Id == targetUser.Id {
+		response.SuccessButFail(context, consts.ContactCannotRemoveOwnAcc, consts.ContactCannotRemoveOwnAcc, nil)
+		return
+	}
+
+	contactService := contacts_service.ContactsStruct{
+		UserId:   strconv.Itoa(int(user.Id)),
+		FriendId: strconv.Itoa(int(targetUser.Id)),
+		Status:   -1,
+	}
+
+	contact, err := contactService.GetContactsByBothId()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), consts.ContactNotFound, nil)
+	}
+
+	if contact.Status >= 0 {
+		_, err = contactService.UpdateContact()
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), consts.RemoveContactFailed, nil)
+		}
+		contactService.UserId = strconv.Itoa(int(targetUser.Id))
+		contactService.FriendId = strconv.Itoa(int(user.Id))
+		aFrdContact, err := contactService.UpdateContact()
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), consts.RemoveContactFailed, nil)
+		}
+		response.Success(context, consts.RemoveContactSuccess, aFrdContact.UpdatedAt)
+	} else {
+		response.SuccessButFail(context, consts.RemoveContactFailed, consts.RemoveContactFailed, nil)
 	}
 	return
 }

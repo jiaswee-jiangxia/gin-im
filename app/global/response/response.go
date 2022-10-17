@@ -30,4 +30,7 @@ var (
 	ContactNotFound                   = "contact_not_found"
 	AcceptContactFailed               = "accept_contact_failed"
 	AcceptContactSuccess              = "accept_contact_success"
+	RemoveContactFailed               = "remove_contact_failed"
+	RemoveContactSuccess              = "remove_contact_success"
+	ContactCannotRemoveOwnAcc         = "contact_cannot_remove_own_acc"
 )
