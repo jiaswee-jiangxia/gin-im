@@ -32,9 +32,9 @@ func CreateContact(context *gin.Context) {
 	user, err := userService.FindUserByUsername()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			response.SuccessButFail(context, err.Error(), consts.UserNotFound.Error(), nil)
+			response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
 		} else {
-			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed.Error(), nil)
+			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
 		}
 		return
 	}
@@ -44,15 +44,15 @@ func CreateContact(context *gin.Context) {
 	targetUser, err := userService.FindUserByUsername()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			response.SuccessButFail(context, err.Error(), consts.UserNotFound.Error(), nil)
+			response.SuccessButFail(context, err.Error(), consts.UserNotFound, nil)
 		} else {
-			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed.Error(), nil)
+			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
 		}
 		return
 	}
 
 	if user.Id == targetUser.Id {
-		response.SuccessButFail(context, err.Error(), consts.CreateContactCannotAddOwnAcc.Error(), nil)
+		response.SuccessButFail(context, err.Error(), consts.CreateContactCannotAddOwnAcc, nil)
 		return
 	}
 
@@ -71,14 +71,14 @@ func CreateContact(context *gin.Context) {
 			contactService.Status = int64(frdStatus)
 			_, err = contactService.CreateNewContact()
 			if err != nil {
-				response.SuccessButFail(context, err.Error(), consts.CreateContactFailed.Error(), nil)
+				response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
 			}
-			response.Success(context, consts.CreateContactSuccess.Error(), nil)
+			response.Success(context, consts.CreateContactSuccess, nil)
 		} else {
-			response.SuccessButFail(context, err.Error(), consts.CreateContactSearchContactCrashed.Error(), nil)
+			response.SuccessButFail(context, err.Error(), consts.CreateContactSearchContactCrashed, nil)
 		}
 	} else {
-		response.SuccessButFail(context, consts.CreateContactRequestDuplicated.Error(), consts.CreateContactRequestDuplicated.Error(), nil)
+		response.SuccessButFail(context, consts.CreateContactRequestDuplicated, consts.CreateContactRequestDuplicated, nil)
 	}
 	return
 }
