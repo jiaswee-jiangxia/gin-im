@@ -1,14 +1,15 @@
 package routers
 
 import (
-	"github.com/gin-contrib/pprof"
-	"github.com/gin-gonic/gin"
 	"goskeleton/app/global/variable"
 	"goskeleton/app/http/controller/api"
 	"goskeleton/app/http/middleware/cors"
 	"goskeleton/app/http/middleware/jwt"
 	"io"
 	"os"
+
+	"github.com/gin-contrib/pprof"
+	"github.com/gin-gonic/gin"
 )
 
 // 该路由主要设置门户类网站等前台路由
@@ -45,15 +46,20 @@ func InitApiRouter() *gin.Engine {
 				jwtUserGroup.GET("/profile", api.Profile)
 			}
 		}
-		//groupApi := vApi.Group("/group")
-		//{
-		//jwtGroupApi := groupApi.Use(jwt.JWT())
-		//{
-		//jwtGroupApi.GET("/menu", api.GetMenu)
-		//jwtGroupApi.GET("/list", api.GetStoreList)
-		//jwtGroupApi.GET("/search", api.GetStoreSearch)
-		//}
-		//}
+		groupApi := vApi.Group("/group")
+		{
+			jwtGroupApi := groupApi.Use(jwt.JWT())
+			{
+				jwtGroupApi.POST("/create", api.CreateGroup)
+				jwtGroupApi.POST("/admin/list", api.ListGroupAdmin)
+				jwtGroupApi.POST("/member/list", api.ListGroupMember)
+				jwtGroupApi.POST("/addmember", api.AddGroupMember)
+				jwtGroupApi.POST("/setadmin", api.SetGroupAdmin)
+				jwtGroupApi.POST("/setowner", api.SetGroupOwner)
+				jwtGroupApi.POST("/member/remove", api.RemoveGroupMember)
+				jwtGroupApi.POST("/disband", api.DisbandGroup)
+			}
+		}
 	}
 	return router
 }
