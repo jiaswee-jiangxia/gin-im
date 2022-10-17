@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 type GroupStruct struct {
 	BaseModel
 	Name      string `gorm:"column:name" json:"groupname"`
@@ -32,7 +30,6 @@ func CreateGroup(groupName string, owner string) (*GroupStruct, error) {
 }
 
 func AddGroupMember(groupID int64, memberUsername string) error {
-	fmt.Println(1)
 	err := db.Table("group_members").Select("group_id", "username", "role").
 		Create(&GroupMemberStruct{
 			GroupID:  groupID,

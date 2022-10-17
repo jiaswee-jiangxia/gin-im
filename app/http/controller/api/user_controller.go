@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
 	"goskeleton/app/global/variable"
 	"goskeleton/app/model"
 	"goskeleton/app/service/redis_service"
@@ -12,6 +10,9 @@ import (
 	"goskeleton/app/utils/response"
 	"strconv"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 type Credentials struct {

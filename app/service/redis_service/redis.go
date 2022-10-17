@@ -3,18 +3,20 @@ package redis_service
 import (
 	"context"
 	"encoding/json"
-	"github.com/go-redis/redis/v8"
 	"goskeleton/app/global/variable"
 	"goskeleton/app/model"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
 const CacheNamePre = "im_"
 
 const RedisCacheDefault = 0
 const RedisCacheUser = 1
+const RedisCacheGroup = 2
 
 var RedisCacheExpired = map[string]time.Duration{
 	// 永远不过期的redis为 -1
