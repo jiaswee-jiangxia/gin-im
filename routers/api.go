@@ -43,7 +43,10 @@ func InitApiRouter() *gin.Engine {
 			userApi.POST("/register", api.Register)
 			jwtUserGroup := userApi.Use(jwt.JWT())
 			{
-				jwtUserGroup.GET("/profile", api.Profile)
+				jwtUserGroup.GET("/profile", api.GetProfile)
+				jwtUserGroup.POST("update/profile", api.UpdateProfile)
+				jwtUserGroup.POST("update/token", api.UpdateToken)
+				jwtUserGroup.POST("update/password", api.UpdatePassword)
 			}
 		}
 		groupsApi := vApi.Group("/group")

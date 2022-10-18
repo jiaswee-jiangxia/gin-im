@@ -62,7 +62,7 @@ func Login(context *gin.Context) {
 }
 
 type RegisterStruct struct {
-	Username             string `json:"username"`
+	Username             string `json:"username" binding:"required"`
 	Password             string `json:"password" binding:"required"`
 	ConfirmationPassword string `json:"confirmation_password" binding:"required"`
 	Email                string `json:"email"`
@@ -122,7 +122,7 @@ func Register(context *gin.Context) {
 	return
 }
 
-func Profile(context *gin.Context) {
+func GetProfile(context *gin.Context) {
 	username, exist := context.Get("username")
 	if !exist {
 		response.Success(context, "ok", nil)
@@ -149,7 +149,164 @@ func Profile(context *gin.Context) {
 	}
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
-	fmt.Println(profile.CreatedAt)
-	response.Success(context, "ok", profile.CreatedAt)
+	response.Success(context, "ok", profile)
+	return
+}
+
+type UpdateProfileStruct struct {
+	Nickname   *string `json:"nickname"`
+	Email      *string `json:"email"`
+	Contact    *string `json:"contact"`
+	BFVerified *bool   `json:"b_f_verified"`
+}
+
+func UpdateProfile(context *gin.Context) {
+	var err error
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, "ok", nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+
+	var prof UpdateProfileStruct
+	if err := context.ShouldBindJSON(&prof); err != nil { // Get request data
+		response.ErrorParam(context, prof)
+		return
+	}
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + usernameText,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	if prof.Nickname != nil {
+		err = userService.UpdateNickname(prof.Nickname)
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), "ok", nil)
+			return
+		}
+	}
+	if prof.Nickname != nil {
+		err = userService.UpdateEmail(prof.Email)
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), "ok", nil)
+			return
+		}
+	}
+	if prof.Nickname != nil {
+		err = userService.UpdateContact(prof.Contact)
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), "ok", nil)
+			return
+		}
+	}
+	if prof.Nickname != nil {
+		err = userService.UpdateBFVerified(prof.BFVerified)
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), "ok", nil)
+			return
+		}
+	}
+	profile, err := userService.UserProfile()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), "ok", nil)
+		return
+	}
+	rdb.CacheValue = profile
+	rdb.PrepareCacheWrite()
+	response.Success(context, "ok", profile)
+	return
+}
+
+type UpdateTokenStruct struct {
+	Wx_token  *string `json:"wx_token"`
+	Ios_token *string `json:"ios_token"`
+}
+
+func UpdateToken(context *gin.Context) {
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, "ok", nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+
+	var tokens UpdateTokenStruct
+	if err := context.ShouldBindJSON(&tokens); err != nil { // Get request data
+		response.ErrorParam(context, tokens)
+		return
+	}
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + usernameText,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	if tokens.Wx_token != nil {
+		err := userService.UpdateWxToken(tokens.Wx_token)
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), "ok", nil)
+			return
+		}
+	}
+	if tokens.Ios_token != nil {
+		err := userService.UpdateIosToken(tokens.Ios_token)
+		if err != nil {
+			response.SuccessButFail(context, err.Error(), "ok", nil)
+			return
+		}
+	}
+	profile, err := userService.UserProfile()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), "ok", nil)
+		return
+	}
+	rdb.CacheValue = profile
+	rdb.PrepareCacheWrite()
+	response.Success(context, "ok", profile)
+	return
+}
+
+type UpdatePasswordStruct struct {
+	OldPassword     string `json:"old_password" binding:"required"`
+	NewPassword     string `json:"new_password" binding:"required"`
+	ConfirmPassword string `json:"confirmation_password" binding:"required"`
+}
+
+func UpdatePassword(context *gin.Context) {
+	var err error
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, "ok", nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+
+	var passwords UpdatePasswordStruct
+	if err := context.ShouldBindJSON(&passwords); err != nil { // Get request data
+		response.ErrorParam(context, passwords)
+		return
+	}
+
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	if passwords.NewPassword == passwords.ConfirmPassword {
+		err = userService.UpdatePassword(passwords.OldPassword, passwords.NewPassword)
+	} else {
+		response.SuccessButFail(context, "password different", "ok", nil)
+		return
+	}
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), "ok", nil)
+		return
+	}
+	profile, err := userService.UserProfile()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), "ok", nil)
+		return
+	}
+
+	response.Success(context, "ok", profile)
 	return
 }

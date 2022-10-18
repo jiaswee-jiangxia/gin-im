@@ -1,8 +1,9 @@
 package user_service
 
 import (
-	"gorm.io/gorm"
 	"goskeleton/app/model"
+
+	"gorm.io/gorm"
 )
 
 type TokenStruct struct {
@@ -44,4 +45,39 @@ func (m *TokenStruct) FindUserByUsername() (*model.Users, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+func (m *TokenStruct) UpdateNickname(nickname *string) error {
+	err := model.UpdateNickname(&m.Username, nickname)
+	return err
+}
+
+func (m *TokenStruct) UpdateContact(contact *string) error {
+	err := model.UpdateContact(&m.Username, contact)
+	return err
+}
+
+func (m *TokenStruct) UpdateEmail(email *string) error {
+	err := model.UpdateEmail(&m.Username, email)
+	return err
+}
+
+func (m *TokenStruct) UpdateBFVerified(BFVerified *bool) error {
+	err := model.UpdateBFVerified(&m.Username, BFVerified)
+	return err
+}
+
+func (m *TokenStruct) UpdateWxToken(WxToken *string) error {
+	err := model.UpdateWxToken(&m.Username, WxToken)
+	return err
+}
+
+func (m *TokenStruct) UpdateIosToken(IosToken *string) error {
+	err := model.UpdateIosToken(&m.Username, IosToken)
+	return err
+}
+
+func (m *TokenStruct) UpdatePassword(old_password string, new_password string) error {
+	err := model.UpdatePassword(&m.Username, old_password, new_password)
+	return err
 }
