@@ -7,6 +7,8 @@ var (
 	Failed                            = "failed"
 	UserFound                         = "user_found"
 	UserNotFound                      = "user_not_found"
+	InvalidUsernamePassword           = "invalid_username_password"
+	WrongConfirmationPassword         = "wrong_confirmation_password"
 	CreateContactSuccess              = "create_contact_success"
 	CreateContactFailed               = "create_contact_failed"
 	CreateContactCannotAddOwnAcc      = "create_contact_cannot_add_own_acc"
