@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	consts "goskeleton/app/global/response"
+
 	"goskeleton/app/global/variable"
 	"goskeleton/app/model"
 	"goskeleton/app/service/redis_service"
@@ -38,7 +40,7 @@ func Login(context *gin.Context) {
 	}
 	member, err := userService.UserLogin()
 	if err != nil || member.Id <= 0 {
-		response.SuccessButFail(context, "invalid_username_password", "invalid_username_password", nil)
+		response.SuccessButFail(context, consts.InvalidUsernamePassword, consts.InvalidUsernamePassword, nil)
 		return
 	}
 	// Create the JWT claims, which includes the username and expiry time
@@ -54,10 +56,10 @@ func Login(context *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	signedString, errSignedString := token.SignedString(variable.PrivateKey)
 	if errSignedString != nil {
-		response.SuccessButFail(context, errSignedString.Error(), "ok", nil)
+		response.SuccessButFail(context, errSignedString.Error(), consts.Success, nil)
 		return
 	}
-	response.Success(context, "ok", signedString)
+	response.Success(context, consts.Success, signedString)
 	return
 }
 
@@ -76,7 +78,7 @@ func Register(context *gin.Context) {
 		return
 	}
 	if creds.Password != creds.ConfirmationPassword {
-		response.SuccessButFail(context, "wrong_confirmation_password", "ok", nil)
+		response.SuccessButFail(context, consts.WrongConfirmationPassword, consts.Failed, nil)
 		return
 	}
 
@@ -95,7 +97,7 @@ func Register(context *gin.Context) {
 	member, err := userService.UserRegister()
 	if err != nil {
 		txUser.Rollback()
-		response.SuccessButFail(context, err.Error(), "ok", nil)
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
 	// Create the JWT claims, which includes the username and expiry time
@@ -113,19 +115,19 @@ func Register(context *gin.Context) {
 	if errSignedString != nil {
 		txUser.Rollback()
 		tx.Rollback()
-		response.SuccessButFail(context, errSignedString.Error(), "ok", nil)
+		response.SuccessButFail(context, errSignedString.Error(), consts.Failed, nil)
 		return
 	}
 	txUser.Commit()
 	tx.Commit()
-	response.Success(context, "ok", signedString)
+	response.Success(context, consts.Success, signedString)
 	return
 }
 
 func GetProfile(context *gin.Context) {
 	username, exist := context.Get("username")
 	if !exist {
-		response.Success(context, "ok", nil)
+		response.Success(context, consts.Failed, nil)
 	}
 	usernameText := fmt.Sprintf("%v", username)
 	rdb := redis_service.RedisStruct{
@@ -136,7 +138,7 @@ func GetProfile(context *gin.Context) {
 	if cacheData != "" {
 		var returnProfile interface{}
 		_ = json.Unmarshal([]byte(cacheData), &returnProfile)
-		response.Success(context, "ok", returnProfile)
+		response.Success(context, consts.Success, returnProfile)
 		return
 	}
 	userService := user_service.TokenStruct{
@@ -144,12 +146,12 @@ func GetProfile(context *gin.Context) {
 	}
 	profile, err := userService.UserProfile()
 	if err != nil {
-		response.SuccessButFail(context, err.Error(), "ok", nil)
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
-	response.Success(context, "ok", profile)
+	response.Success(context, consts.Success, profile)
 	return
 }
 
@@ -164,7 +166,7 @@ func UpdateProfile(context *gin.Context) {
 	var err error
 	username, exist := context.Get("username")
 	if !exist {
-		response.Success(context, "ok", nil)
+		response.Success(context, consts.Failed, nil)
 	}
 	usernameText := fmt.Sprintf("%v", username)
 
@@ -183,39 +185,39 @@ func UpdateProfile(context *gin.Context) {
 	if prof.Nickname != nil {
 		err = userService.UpdateNickname(prof.Nickname)
 		if err != nil {
-			response.SuccessButFail(context, err.Error(), "ok", nil)
+			response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 			return
 		}
 	}
 	if prof.Nickname != nil {
 		err = userService.UpdateEmail(prof.Email)
 		if err != nil {
-			response.SuccessButFail(context, err.Error(), "ok", nil)
+			response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 			return
 		}
 	}
 	if prof.Nickname != nil {
 		err = userService.UpdateContact(prof.Contact)
 		if err != nil {
-			response.SuccessButFail(context, err.Error(), "ok", nil)
+			response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 			return
 		}
 	}
 	if prof.Nickname != nil {
 		err = userService.UpdateBFVerified(prof.BFVerified)
 		if err != nil {
-			response.SuccessButFail(context, err.Error(), "ok", nil)
+			response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 			return
 		}
 	}
 	profile, err := userService.UserProfile()
 	if err != nil {
-		response.SuccessButFail(context, err.Error(), "ok", nil)
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
-	response.Success(context, "ok", profile)
+	response.Success(context, consts.Success, profile)
 	return
 }
 
@@ -227,7 +229,7 @@ type UpdateTokenStruct struct {
 func UpdateToken(context *gin.Context) {
 	username, exist := context.Get("username")
 	if !exist {
-		response.Success(context, "ok", nil)
+		response.Success(context, consts.Success, nil)
 	}
 	usernameText := fmt.Sprintf("%v", username)
 
@@ -246,25 +248,25 @@ func UpdateToken(context *gin.Context) {
 	if tokens.Wx_token != nil {
 		err := userService.UpdateWxToken(tokens.Wx_token)
 		if err != nil {
-			response.SuccessButFail(context, err.Error(), "ok", nil)
+			response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 			return
 		}
 	}
 	if tokens.Ios_token != nil {
 		err := userService.UpdateIosToken(tokens.Ios_token)
 		if err != nil {
-			response.SuccessButFail(context, err.Error(), "ok", nil)
+			response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 			return
 		}
 	}
 	profile, err := userService.UserProfile()
 	if err != nil {
-		response.SuccessButFail(context, err.Error(), "ok", nil)
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
-	response.Success(context, "ok", profile)
+	response.Success(context, consts.Success, profile)
 	return
 }
 
@@ -278,7 +280,7 @@ func UpdatePassword(context *gin.Context) {
 	var err error
 	username, exist := context.Get("username")
 	if !exist {
-		response.Success(context, "ok", nil)
+		response.Success(context, consts.Failed, nil)
 	}
 	usernameText := fmt.Sprintf("%v", username)
 
@@ -294,19 +296,19 @@ func UpdatePassword(context *gin.Context) {
 	if passwords.NewPassword == passwords.ConfirmPassword {
 		err = userService.UpdatePassword(passwords.OldPassword, passwords.NewPassword)
 	} else {
-		response.SuccessButFail(context, "password different", "ok", nil)
+		response.SuccessButFail(context, consts.WrongConfirmationPassword, consts.Failed, nil)
 		return
 	}
 	if err != nil {
-		response.SuccessButFail(context, err.Error(), "ok", nil)
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
 	profile, err := userService.UserProfile()
 	if err != nil {
-		response.SuccessButFail(context, err.Error(), "ok", nil)
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
 
-	response.Success(context, "ok", profile)
+	response.Success(context, consts.Success, profile)
 	return
 }
