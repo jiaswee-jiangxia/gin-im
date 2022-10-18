@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package api.ggs;
+
+//option go_package = "./;proto";
+option go_package = "gin-grpc-server/api/ggs;ggs";
+option java_multiple_files = true;
+option java_package = "api.ggs";
+
+service User {
+  rpc ListUserServerStream (ListUserRequest) returns (stream ListUserReply);
+}
+
+message ListUserRequest {
+  string username = 1;
+}
+message ListUserReply {
+  string data = 1;
+}
