@@ -14,3 +14,6 @@
 
 ### socket底层技术
 1. 目前websocket的初期底层已经完成测试且放在了main.go。
+
+### docker
+1. docker build -t gin-im-stag -f .docker/Dockerfile .
