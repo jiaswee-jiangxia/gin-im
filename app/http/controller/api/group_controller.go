@@ -11,7 +11,7 @@ import (
 )
 
 type CreateGroupStruct struct {
-	GroupName string `json:"groupname"`
+	GroupName string `json:"groupname" binding:"required"`
 }
 
 func CreateGroup(context *gin.Context) {
@@ -43,7 +43,7 @@ func CreateGroup(context *gin.Context) {
 }
 
 type GroupInfoRequestStruct struct {
-	GroupID int64 `json:"GroupID"`
+	GroupID int64 `json:"GroupID" binding:"required"`
 }
 type GroupInfoReplyStruct struct {
 	GroupInfo  model.GroupStruct         `json:"GroupInfo"`
@@ -105,8 +105,8 @@ func ListGroupMember(context *gin.Context) {
 }
 
 type AddGroupMemberStruct struct {
-	GroupID  int64    `json:"GroupID"`
-	UserList []string `json:"UserList"`
+	GroupID  int64    `json:"GroupID" binding:"required"`
+	UserList []string `json:"UserList" binding:"required"`
 }
 
 func AddGroupMember(context *gin.Context) {
@@ -151,8 +151,8 @@ func AddGroupMember(context *gin.Context) {
 }
 
 type SetGroupAdminStruct struct {
-	GroupID        int64    `json:"GroupID"`
-	MemberUsername []string `json:"MemberUsername"`
+	GroupID        int64    `json:"GroupID" binding:"required"`
+	MemberUsername []string `json:"MemberUsername" binding:"required"`
 }
 
 func SetGroupAdmin(context *gin.Context) {
@@ -195,8 +195,8 @@ func SetGroupAdmin(context *gin.Context) {
 }
 
 type SetGroupOwnerStruct struct {
-	GroupID        int64  `json:"GroupID"`
-	MemberUsername string `json:"MemberUsername"`
+	GroupID        int64  `json:"GroupID" binding:"required"`
+	MemberUsername string `json:"MemberUsername" binding:"required"`
 }
 
 func SetGroupOwner(context *gin.Context) {
@@ -237,8 +237,8 @@ func SetGroupOwner(context *gin.Context) {
 }
 
 type RemoveGroupMemberStruct struct {
-	GroupID        int64    `json:"GroupID"`
-	MemberUsername []string `json:"MemberUsername"`
+	GroupID        int64    `json:"GroupID" binding:"required"`
+	MemberUsername []string `json:"MemberUsername" binding:"required"`
 }
 
 func RemoveGroupMember(context *gin.Context) {
@@ -281,7 +281,7 @@ func RemoveGroupMember(context *gin.Context) {
 }
 
 type DisbandGroupStruct struct {
-	GroupID int64 `json:"GroupID"`
+	GroupID int64 `json:"GroupID" binding:"required"`
 }
 
 func DisbandGroup(context *gin.Context) {

@@ -13,6 +13,10 @@ type Users struct {
 	LastOnline string `gorm:"column:last_online" json:"last_online"`
 }
 
+func UserLoginByUsername() (*Users, error) {
+	return nil, nil
+}
+
 func GetUserByUsername(username string) (*Users, error) {
 	var u *Users
 	err := db.Table("users").
