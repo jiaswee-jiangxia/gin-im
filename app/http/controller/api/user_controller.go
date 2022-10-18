@@ -151,4 +151,5 @@ func Profile(context *gin.Context) {
 	rdb.PrepareCacheWrite()
 	fmt.Println(profile.CreatedAt)
 	response.Success(context, "ok", profile.CreatedAt)
+	return
 }
