@@ -14,15 +14,15 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
-	github.com/gomodule/redigo v1.8.5
+	github.com/gomodule/redigo v1.8.9
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/joho/godotenv v1.4.0
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nicksnyder/go-i18n/v2 v2.2.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/qifengzhang007/goCurl v1.3.2
-	github.com/silenceper/gowatch v1.5.2 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	github.com/streadway/amqp v1.0.0
