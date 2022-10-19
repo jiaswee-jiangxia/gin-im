@@ -2,7 +2,6 @@ package consts
 
 // 这里定义的常量，一般是具有错误代码+错误说明组成，一般用于接口返回
 var (
-	// UserNotFound 无法查获用户
 	Success                           = "success"
 	Failed                            = "failed"
 	UserFound                         = "user_found"
