@@ -16,4 +16,8 @@
 1. 目前websocket的初期底层已经完成测试且放在了main.go。
 
 ### docker
-1. docker build -t gin-im-stag -f .docker/Dockerfile .
+1. docker buildx build --platform linux/amd64 -t gin-im-stag -f .docker/Dockerfile .
+2. docker run --rm -p 20191:20191 jiasweejiangxia/gin-im-stag:[TAG]
+
+### 项目全面图
+![img.png](public/img.png)
