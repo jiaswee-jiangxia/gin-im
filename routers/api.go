@@ -63,16 +63,16 @@ func InitApiRouter() *gin.Engine {
 				jwtGroupsApi.POST("/disband", api.DisbandGroup)
 			}
 		}
-		groupApi := vApi.Group("/contact")
+		contactApi := vApi.Group("/contact")
 		{
-			jwtGroupApi := groupApi.Use(jwt.JWT())
+			jwtContactApi := contactApi.Use(jwt.JWT())
 			{
-				jwtGroupApi.GET("/", api.ContactList)
-				jwtGroupApi.GET("/lookup", api.SearchContact)
-				jwtGroupApi.POST("/create", api.CreateContact)
-				jwtGroupApi.POST("/grouping", api.CreateGrouping)
-				jwtGroupApi.POST("/accept", api.AcceptContact)
-				jwtGroupApi.POST("/remove", api.RemoveContact)
+				jwtContactApi.GET("/", api.ContactList)
+				jwtContactApi.GET("/lookup", api.SearchContact)
+				jwtContactApi.POST("/create", api.CreateContact)
+				jwtContactApi.POST("/grouping", api.CreateGrouping)
+				jwtContactApi.POST("/accept", api.AcceptContact)
+				jwtContactApi.POST("/remove", api.RemoveContact)
 			}
 		}
 	}
