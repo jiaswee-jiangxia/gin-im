@@ -7,7 +7,6 @@ import (
 	"goskeleton/app/helpers"
 
 	"goskeleton/app/global/variable"
-	"goskeleton/app/model"
 	"goskeleton/app/service/redis_service"
 	"goskeleton/app/service/user_service"
 	"goskeleton/app/utils/response"
@@ -66,11 +65,11 @@ func Login(context *gin.Context) {
 }
 
 type RegisterStruct struct {
-	Username             string `json:"username" binding:"required"`
-	Password             string `json:"password" binding:"required"`
-	ConfirmationPassword string `json:"confirmation_password" binding:"required"`
-	Email                string `json:"email"`
-	Contact              string `json:"contact" binding:"required"`
+	Username             string `form:"username" json:"username" binding:"required,alphanum,min=4"`
+	Password             string `form:"password" json:"password" binding:"required,min=6"`
+	ConfirmationPassword string `form:"confirmation_password" json:"confirmation_password" binding:"required,min=6"`
+	Email                string `form:"email" json:"email" binding:"email"`
+	Contact              string `form:"contact" json:"contact" binding:"required,min=10"`
 }
 
 func Register(context *gin.Context) {
@@ -84,21 +83,15 @@ func Register(context *gin.Context) {
 		return
 	}
 
-	db := model.GetDB()
-	// begin a transaction
-	txUser := db.Begin()
-	tx := db.Begin()
 	expirationTime := time.Now().Add(720 * time.Minute)
 	userService := user_service.TokenStruct{
 		Username: creds.Username,
 		Contact:  creds.Contact,
 		Email:    creds.Email,
 		Password: creds.Password,
-		Tx:       txUser,
 	}
 	member, err := userService.UserRegister()
 	if err != nil {
-		txUser.Rollback()
 		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
@@ -115,13 +108,9 @@ func Register(context *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	signedString, errSignedString := token.SignedString(variable.PrivateKey)
 	if errSignedString != nil {
-		txUser.Rollback()
-		tx.Rollback()
 		response.SuccessButFail(context, errSignedString.Error(), consts.Failed, nil)
 		return
 	}
-	txUser.Commit()
-	tx.Commit()
 	response.Success(context, consts.Success, signedString)
 	return
 }

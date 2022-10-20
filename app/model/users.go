@@ -3,11 +3,8 @@ package model
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"goskeleton/app/helpers"
 	"goskeleton/app/service/redis_service"
-
-	"gorm.io/gorm"
 )
 
 type Users struct {
@@ -31,27 +28,37 @@ type RegisterStruct struct {
 	Password string `gorm:"column:password" json:"password"`
 }
 
-func UserRegister(tx *gorm.DB, username string, email string, pass string, mobileNo string) (*RegisterStruct, error) {
-	//idx := helpers.ShardHash(mobileNo)
-	hash := helpers.GetMD5Hash(pass)
-	//key, _ := strconv.Atoi(idx)
-	var checkUser LoginStruct
-	err := tx.Table("users").
-		Where("username", username).First(&checkUser).Error
+func UserRegister(username string, email string, pass string, mobileNo string) (*RegisterStruct, error) {
+	var checkUser *Users
+	var err error
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	cacheData := rdb.PrepareCacheRead()
+	if cacheData != "" {
+		return nil, errors.New("username_is_used")
+	} else {
+		err = db.Table("users").
+			Where("username", username).First(&checkUser).Error
+	}
 	if checkUser.Id > 0 {
+		rdb.CacheValue = checkUser
+		rdb.PrepareCacheWrite()
 		return nil, errors.New("username_is_used")
 	}
-	registrationClone := RegisterStruct{
+	hash := helpers.GetMD5Hash(pass)
+	registrationClone := &RegisterStruct{
 		Username: username,
 		Email:    email,
 		Contact:  mobileNo,
 		Password: hash,
 	}
-	err = tx.Table("users").Create(&registrationClone).Error
+	err = db.Table("users").Create(registrationClone).Error
 	if err != nil {
 		return nil, err
 	}
-	return &registrationClone, nil
+	return registrationClone, nil
 }
 
 func UserLogin(username string, pass string) (*Users, error) {
@@ -63,7 +70,6 @@ func UserLogin(username string, pass string) (*Users, error) {
 	}
 	cacheData := rdb.PrepareCacheRead()
 	if cacheData != "" {
-		fmt.Println(cacheData)
 		err = json.Unmarshal([]byte(cacheData), &member)
 		if err != nil {
 			return member, err

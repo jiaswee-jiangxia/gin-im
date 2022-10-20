@@ -23,7 +23,7 @@ func (m *TokenStruct) UserLogin() (*model.Users, error) {
 }
 
 func (m *TokenStruct) UserRegister() (*model.RegisterStruct, error) {
-	member, err := model.UserRegister(m.Tx, m.Username, m.Email, m.Password, m.Contact)
+	member, err := model.UserRegister(m.Username, m.Email, m.Password, m.Contact)
 	if err != nil {
 		return nil, err
 	}
