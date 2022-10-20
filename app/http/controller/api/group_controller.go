@@ -38,7 +38,7 @@ func CreateGroup(context *gin.Context) {
 		response.SuccessButFail(context, err.Error(), consts.CreateGroupFailed, nil)
 		return
 	}
-	response.Success(context, consts.CreateGroupSuccess, newGroup)
+	response.Success(context, consts.Success, newGroup)
 	return
 }
 
@@ -71,7 +71,7 @@ func ListGroupAdmin(context *gin.Context) {
 		response.SuccessButFail(context, err.Error(), consts.GetGroupInfoFailed, nil)
 		return
 	}
-	response.Success(context, consts.GetGroupInfoSuccess, &GroupInfoReplyStruct{
+	response.Success(context, consts.Success, &GroupInfoReplyStruct{
 		GroupInfo:  *groupInfo,
 		MemberInfo: adminList,
 	})
@@ -98,7 +98,7 @@ func ListGroupMember(context *gin.Context) {
 		response.SuccessButFail(context, err.Error(), consts.GetGroupInfoFailed, nil)
 		return
 	}
-	response.Success(context, consts.GetGroupInfoSuccess, &GroupInfoReplyStruct{
+	response.Success(context, consts.Success, &GroupInfoReplyStruct{
 		GroupInfo:  *groupInfo,
 		MemberInfo: adminList,
 	})
@@ -147,7 +147,7 @@ func AddGroupMember(context *gin.Context) {
 			return
 		}
 	}
-	response.Success(context, consts.AddGroupMemberSuccess, nil)
+	response.Success(context, consts.Success, nil)
 }
 
 type SetGroupAdminStruct struct {
@@ -190,7 +190,7 @@ func SetGroupAdmin(context *gin.Context) {
 			return
 		}
 	}
-	response.Success(context, consts.SetGroupAdminSuccess, nil)
+	response.Success(context, consts.Success, nil)
 	return
 }
 
@@ -232,7 +232,7 @@ func SetGroupOwner(context *gin.Context) {
 		response.SuccessButFail(context, consts.SetGroupOwnerFailed, consts.SetGroupOwnerFailed, nil)
 		return
 	}
-	response.Success(context, consts.SetGroupOwnerSuccess, nil)
+	response.Success(context, consts.Success, nil)
 	return
 }
 
@@ -276,7 +276,7 @@ func RemoveGroupMember(context *gin.Context) {
 			return
 		}
 	}
-	response.Success(context, consts.RemoveGroupMemberSuccess, nil)
+	response.Success(context, consts.Success, nil)
 	return
 }
 
@@ -309,13 +309,14 @@ func DisbandGroup(context *gin.Context) {
 		response.SuccessButFail(context, consts.DisbandGroupFailed, consts.DisbandGroupFailed, nil)
 		return
 	}
-	response.Success(context, consts.DisbandGroupSuccess, nil)
+	response.Success(context, consts.Success, nil)
 	return
 }
 
 // ------------------------------------------------------------------------------------------
 
 func memberExist(memberList []model.GroupMemberStruct, memberUsername string) bool { // Check if member exist in the list
+	fmt.Println(memberList)
 	for _, v := range memberList {
 		if v.Username == memberUsername {
 			return true
