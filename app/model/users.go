@@ -122,6 +122,11 @@ func UpdateNickname(username *string, nickname *string) error {
 			Update("nickname", nickname).
 			Error
 	}
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + *username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	rdb.DelCache()
 	return err
 }
 
@@ -133,6 +138,11 @@ func UpdateEmail(username *string, email *string) error {
 			Update("email", email).
 			Error
 	}
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + *username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	rdb.DelCache()
 	return err
 }
 
@@ -155,6 +165,11 @@ func UpdateBFVerified(username *string, BFVerified *bool) error {
 			Update("b_f_verified", BFVerified).
 			Error
 	}
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + *username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	rdb.DelCache()
 	return err
 }
 
@@ -163,6 +178,11 @@ func UpdateWxToken(username *string, wxtoken *string) error {
 		Where("username = ?", username).
 		Update("wx_token", wxtoken).
 		Error
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + *username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	rdb.DelCache()
 	return err
 }
 
@@ -171,6 +191,11 @@ func UpdateIosToken(username *string, iostoken *string) error {
 		Where("username = ?", username).
 		Update("ios_token", iostoken).
 		Error
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + *username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	rdb.DelCache()
 	return err
 }
 
@@ -190,6 +215,13 @@ func UpdatePassword(username *string, old_password string, new_password string) 
 			Update("password", newHash).
 			Error
 	}
-
+	if err != nil {
+		return err
+	}
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + *username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	rdb.DelCache()
 	return err
 }

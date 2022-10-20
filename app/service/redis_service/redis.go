@@ -27,6 +27,9 @@ var RedisCacheExpired = map[string]time.Duration{
 	//"STORE_DETAILS":        -1,
 	"USER_PROFILE": 86400, //24hrs
 	"USER_CONTACT": 86400, //24hrs
+	"GROUP_INFO":   86400, //24hrs
+	"GROUP_ADMIN":  86400, //24hrs
+	"GROUP_MEMBER": 86400, //24hrs
 }
 
 type RedisStruct struct {
