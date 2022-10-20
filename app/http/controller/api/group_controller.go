@@ -43,7 +43,7 @@ func CreateGroup(context *gin.Context) {
 }
 
 type GroupInfoRequestStruct struct {
-	GroupID int64 `json:"group_id" binding:"required"`
+	GroupID int64 `form:"group_id" binding:"required"`
 }
 type GroupInfoReplyStruct struct {
 	GroupInfo  model.GroupStruct         `json:"GroupInfo"`
@@ -51,8 +51,9 @@ type GroupInfoReplyStruct struct {
 }
 
 func ListGroupAdmin(context *gin.Context) {
-	var group GroupInfoRequestStruct
-	if err := context.ShouldBindJSON(&group); err != nil {
+	var group = GroupInfoRequestStruct{}
+	if err := context.Bind(&group); err != nil {
+		fmt.Println(err)
 		response.ErrorParam(context, group)
 		return
 	}
@@ -79,7 +80,7 @@ func ListGroupAdmin(context *gin.Context) {
 
 func ListGroupMember(context *gin.Context) {
 	var group GroupInfoRequestStruct
-	if err := context.ShouldBindJSON(&group); err != nil {
+	if err := context.Bind(&group); err != nil {
 		response.ErrorParam(context, group)
 		return
 	}

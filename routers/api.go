@@ -54,8 +54,8 @@ func InitApiRouter() *gin.Engine {
 			jwtGroupsApi := groupsApi.Use(jwt.JWT())
 			{
 				jwtGroupsApi.POST("/create", api.CreateGroup)
-				jwtGroupsApi.POST("/admin/list", api.ListGroupAdmin)
-				jwtGroupsApi.POST("/member/list", api.ListGroupMember)
+				jwtGroupsApi.GET("/admin/list", api.ListGroupAdmin)
+				jwtGroupsApi.GET("/member/list", api.ListGroupMember)
 				jwtGroupsApi.POST("/addmember", api.AddGroupMember)
 				jwtGroupsApi.POST("/setadmin", api.SetGroupAdmin)
 				jwtGroupsApi.POST("/setowner", api.SetGroupOwner)
