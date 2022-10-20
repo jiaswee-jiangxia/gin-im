@@ -55,9 +55,6 @@ func AddGroupMember(groupID int64, memberUsername string) error {
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
 	redisService.DelCache()
-	g, err := GetGroupMemberInfo(groupID)
-	redisService.CacheValue = g
-	redisService.PrepareCacheWrite()
 	return err
 }
 
@@ -123,7 +120,6 @@ func GetGroupMemberInfo(groupID int64) (g []GroupMemberStruct, err error) {
 
 func SetGroupAdmin(groupID int64, memberUsername string) error {
 	err := db.Table("group_members").Where("group_id", groupID).Where("username", memberUsername).Update("role", "admin").Error
-	g, err := GetGroupAdminInfo(groupID)
 	if err != nil {
 		return err
 	}
@@ -133,25 +129,20 @@ func SetGroupAdmin(groupID int64, memberUsername string) error {
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
 	redisService.DelCache()
-	redisService.CacheValue = g
-	redisService.PrepareCacheWrite()
 	return err
 }
 
 func SetGroupOwner(groupID int64, memberUsername string) error {
 	err := db.Table("groups").Where("id", groupID).Update("owner", memberUsername).Error
+	if err != nil {
+		return err
+	}
 	redisService := redis.RedisStruct{
 		CacheName:      "GROUP_INFO",
 		CacheNameIndex: redis.RedisCacheGroup,
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
-	g, err := GetGroupInfo(groupID)
-	if err != nil {
-		return err
-	}
 	redisService.DelCache()
-	redisService.CacheValue = g
-	redisService.PrepareCacheWrite()
 	return err
 }
 
@@ -161,33 +152,21 @@ func RemoveGroupMember(groupID int64, memberUsername string) error {
 	if err != nil {
 		return err
 	}
-	// Refresh member list
+	// Delete member cache
 	redisService := redis.RedisStruct{
 		CacheName:      "GROUP_MEMBER",
 		CacheNameIndex: redis.RedisCacheGroup,
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
 	redisService.DelCache()
-	g, err := GetGroupMemberInfo(groupID)
-	if err != nil {
-		return err
-	}
-	redisService.CacheValue = g
-	redisService.PrepareCacheWrite()
 
-	// Refresh admin list
+	// Delete admin cache
 	redisService = redis.RedisStruct{
 		CacheName:      "GROUP_ADMIN",
 		CacheNameIndex: redis.RedisCacheGroup,
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
 	redisService.DelCache()
-	g2, err := GetGroupAdminInfo(groupID)
-	if err != nil {
-		return err
-	}
-	redisService.CacheValue = g2
-	redisService.PrepareCacheWrite()
 	return err
 }
 
@@ -208,12 +187,6 @@ func DisbandGroup(groupID int64) error {
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
 	redisService.DelCache()
-	g, err := GetGroupInfo(groupID)
-	if err != nil {
-		return err
-	}
-	redisService.CacheValue = g
-	redisService.PrepareCacheWrite()
 
 	// Clearing Group member info --------------------------------
 	redisService = redis.RedisStruct{
@@ -222,12 +195,6 @@ func DisbandGroup(groupID int64) error {
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
 	redisService.DelCache()
-	g2, err := GetGroupMemberInfo(groupID)
-	if err != nil {
-		return err
-	}
-	redisService.CacheValue = g2
-	redisService.PrepareCacheWrite()
 
 	// Clearing Group admin info ---------------------------------
 	redisService = redis.RedisStruct{
@@ -236,11 +203,5 @@ func DisbandGroup(groupID int64) error {
 		CacheKey:       strconv.FormatInt(groupID, 10),
 	}
 	redisService.DelCache()
-	g3, err := GetGroupAdminInfo(groupID)
-	if err != nil {
-		return err
-	}
-	redisService.CacheValue = g3
-	redisService.PrepareCacheWrite()
 	return err
 }
