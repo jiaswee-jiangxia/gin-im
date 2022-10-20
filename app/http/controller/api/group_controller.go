@@ -52,7 +52,7 @@ type GroupInfoReplyStruct struct {
 
 func ListGroupAdmin(context *gin.Context) {
 	var group = GroupInfoRequestStruct{}
-	if err := context.Bind(&group); err != nil {
+	if err := context.ShouldBind(&group); err != nil {
 		fmt.Println(err)
 		response.ErrorParam(context, group)
 		return
@@ -80,7 +80,7 @@ func ListGroupAdmin(context *gin.Context) {
 
 func ListGroupMember(context *gin.Context) {
 	var group GroupInfoRequestStruct
-	if err := context.Bind(&group); err != nil {
+	if err := context.ShouldBind(&group); err != nil {
 		response.ErrorParam(context, group)
 		return
 	}
