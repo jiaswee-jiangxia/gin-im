@@ -316,6 +316,7 @@ func DisbandGroup(context *gin.Context) {
 // ------------------------------------------------------------------------------------------
 
 func memberExist(memberList []model.GroupMemberStruct, memberUsername string) bool { // Check if member exist in the list
+	fmt.Println(memberList)
 	for _, v := range memberList {
 		if v.Username == memberUsername {
 			return true
