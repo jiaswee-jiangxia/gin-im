@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"goskeleton/app/service/redis_service"
+	"strconv"
 )
 
 // Contacts struct
@@ -47,11 +48,17 @@ func GetContactsByBothId(userId string, friendId string) (*Contacts, error) {
 }
 
 func CreateNewContact(u *Contacts) (*Contacts, error) {
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_CONTACT:" + strconv.Itoa(int(u.UserId)) + "-" + strconv.Itoa(int(u.FriendId)),
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
 	err := db.Table("contacts").
 		Create(&u).Error
 	if err != nil {
 		return nil, err
 	}
+	rdb.CacheValue = u
+	rdb.PrepareCacheWrite()
 	return u, nil
 }
 
@@ -63,19 +70,39 @@ func Updates(g *Contacts, updates interface{}) (*Contacts, error) {
 	if err != nil {
 		return nil, err
 	}
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_CONTACT:" + strconv.Itoa(int(g.UserId)) + "-" + strconv.Itoa(int(g.FriendId)),
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	_ = rdb.DelCache()
 	return g, nil
 }
 
 func GetContactList(u *Contacts) ([]*UserContacts, error) {
 	var g []*UserContacts
-	err := db.Table("contacts").
-		Joins("inner join users on users.id = contacts.friend_id").
-		Where("user_id = ?", u.UserId).
-		Where("status = ?", 1).
-		Select("contacts.*, users.username").
-		Find(&g).Error
+	var err error
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_CONTACT_LIST:" + strconv.Itoa(int(u.UserId)),
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	cacheData := rdb.PrepareCacheRead()
+	if cacheData != "" {
+		err = json.Unmarshal([]byte(cacheData), &g)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = db.Table("contacts").
+			Joins("inner join users on users.id = contacts.friend_id").
+			Where("user_id = ?", u.UserId).
+			Where("status = ?", 1).
+			Select("contacts.*, users.username").
+			Find(&g).Error
+	}
 	if err != nil {
 		return nil, err
 	}
+	rdb.CacheValue = g
+	rdb.PrepareCacheWrite()
 	return g, nil
 }

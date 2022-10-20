@@ -2,7 +2,6 @@ package contacts_service
 
 import (
 	"goskeleton/app/model"
-	"goskeleton/app/service/redis_service"
 	"strconv"
 )
 
@@ -24,10 +23,6 @@ func (m *ContactsStruct) GetContactsByBothId() (*model.Contacts, error) {
 func (m *ContactsStruct) CreateNewContact() (*model.Contacts, error) {
 	userId, _ := strconv.Atoi(m.UserId)
 	frdId, _ := strconv.Atoi(m.FriendId)
-	rdb := redis_service.RedisStruct{
-		CacheName:      "USER_CONTACT:" + strconv.Itoa(userId) + "-" + strconv.Itoa(frdId),
-		CacheNameIndex: redis_service.RedisCacheUser,
-	}
 	u, err := model.CreateNewContact(&model.Contacts{
 		UserId:   int64(userId),
 		FriendId: int64(frdId),
@@ -37,11 +32,8 @@ func (m *ContactsStruct) CreateNewContact() (*model.Contacts, error) {
 	if err != nil {
 		return nil, err
 	}
-	rdb.CacheValue = u
-	rdb.PrepareCacheWrite()
 	if m.Status > 0 {
-		rdb.CacheName = "USER_CONTACT:" + strconv.Itoa(frdId) + "-" + strconv.Itoa(userId)
-		u2, err := model.CreateNewContact(&model.Contacts{
+		_, err = model.CreateNewContact(&model.Contacts{
 			UserId:   int64(frdId),
 			FriendId: int64(userId),
 			Status:   m.Status,
@@ -49,8 +41,6 @@ func (m *ContactsStruct) CreateNewContact() (*model.Contacts, error) {
 		if err != nil {
 			return nil, err
 		}
-		rdb.CacheValue = u2
-		rdb.PrepareCacheWrite()
 	}
 	return u, nil
 }
