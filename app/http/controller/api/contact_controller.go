@@ -78,8 +78,9 @@ func CreateContact(context *gin.Context) {
 			response.SuccessButFail(context, err.Error(), consts.CreateContactSearchContactCrashed, nil)
 		}
 	} else {
-		if contact.Status > 1 {
+		if contact.Status > -1 {
 			response.SuccessButFail(context, consts.CreateContactRequestDuplicated, consts.CreateContactRequestDuplicated, nil)
+			return
 		} else {
 			contactService.Status = int64(frdStatus)
 			_, err = contactService.UpdateContact()

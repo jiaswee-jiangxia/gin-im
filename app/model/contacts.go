@@ -1,5 +1,10 @@
 package model
 
+import (
+	"encoding/json"
+	"goskeleton/app/service/redis_service"
+)
+
 // Contacts struct
 type Contacts struct {
 	BaseModel
@@ -17,10 +22,24 @@ type UserContacts struct {
 
 func GetContactsByBothId(userId string, friendId string) (*Contacts, error) {
 	var u *Contacts
-	err := db.Table("contacts").
-		Where("user_id = ?", userId).
-		Where("friend_id = ?", friendId).
-		First(&u).Error
+	var err error
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_CONTACT:" + userId + "-" + friendId,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	cacheData := rdb.PrepareCacheRead()
+	if cacheData != "" {
+		err = json.Unmarshal([]byte(cacheData), &u)
+	} else {
+		err = db.Table("contacts").
+			Where("user_id = ?", userId).
+			Where("friend_id = ?", friendId).
+			First(&u).Error
+		if err == nil {
+			rdb.CacheValue = u
+			rdb.PrepareCacheWrite()
+		}
+	}
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,8 @@ var rdbCount = 16
 var RedisCacheExpired = map[string]time.Duration{
 	// 永远不过期的redis为 -1
 	//"STORE_DETAILS":        -1,
-	//"MEMBER_CART_CHECKOUT": 1800,
+	"USER_PROFILE": 86400, //24hrs
+	"USER_CONTACT": 86400, //24hrs
 }
 
 type RedisStruct struct {

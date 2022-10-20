@@ -72,7 +72,7 @@ func UserLogin(username string, pass string) (*Users, error) {
 	if cacheData != "" {
 		err = json.Unmarshal([]byte(cacheData), &member)
 		if err != nil {
-			return member, err
+			return nil, err
 		}
 		return member, nil
 	}
@@ -91,9 +91,23 @@ func UserLogin(username string, pass string) (*Users, error) {
 
 func GetUserByUsername(username string) (*Users, error) {
 	var u *Users
-	err := db.Table("users").
-		Where("username = ?", username).
-		First(&u).Error
+	var err error
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	cacheData := rdb.PrepareCacheRead()
+	if cacheData != "" {
+		err = json.Unmarshal([]byte(cacheData), &u)
+	} else {
+		err = db.Table("users").
+			Where("username = ?", username).
+			First(&u).Error
+		if err == nil {
+			rdb.CacheValue = u
+			rdb.PrepareCacheWrite()
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
