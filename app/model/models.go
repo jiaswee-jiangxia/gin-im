@@ -1,54 +1,18 @@
 package model
 
 import (
-	"context"
-	"fmt"
-	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 	"goskeleton/app/global/variable"
-	"os"
 )
 
 var db *gorm.DB
-var rdb [16]*redis.Client
-var rdbCount = 16
 
 func Setup() {
 	db = variable.GormDbMysql
 }
 
-func SetupRedis() {
-	sum := 0
-	for i := 0; i < rdbCount; i++ {
-		rdb[i] = ConnectRedis(i)
-		sum += i
-	}
-}
-
-func ConnectRedis(index int) *redis.Client {
-	client := redis.NewClient(&redis.Options{
-		Username: os.Getenv("REDIS_USERNAME"),
-		Addr:     os.Getenv("REDIS_HOST"),
-		Password: os.Getenv("REDIS_PASSWORD"), // no password set
-		DB:       index,
-		//TLSConfig: &tls.Config{
-		//	InsecureSkipVerify: true,
-		//},
-	})
-	ctx := context.Background()
-	_, err := client.Ping(ctx).Result()
-	if err != nil {
-		variable.ZapLog.Fatal(fmt.Sprintf("Cannot Ping: %v\n", err.Error()))
-	}
-	return client
-}
-
 func GetDB() *gorm.DB {
 	return db
-}
-
-func GetRedis(index int) *redis.Client {
-	return rdb[index]
 }
 
 // SQLDataPaginateStdReturn. use in standard return for sql pagination

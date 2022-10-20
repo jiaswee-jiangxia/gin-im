@@ -1,9 +1,8 @@
 package user_service
 
 import (
-	"goskeleton/app/model"
-
 	"gorm.io/gorm"
+	"goskeleton/app/model"
 )
 
 type TokenStruct struct {
@@ -15,7 +14,7 @@ type TokenStruct struct {
 	Tx       *gorm.DB
 }
 
-func (m *TokenStruct) UserLogin() (*model.LoginStruct, error) {
+func (m *TokenStruct) UserLogin() (*model.Users, error) {
 	member, err := model.UserLogin(m.Username, m.Password)
 	if err != nil {
 		return nil, err

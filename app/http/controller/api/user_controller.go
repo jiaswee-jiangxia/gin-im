@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	consts "goskeleton/app/global/response"
+	"goskeleton/app/helpers"
 
 	"goskeleton/app/global/variable"
 	"goskeleton/app/model"
@@ -18,8 +19,8 @@ import (
 )
 
 type Credentials struct {
-	Password string `json:"password" binding:"required"`
-	Username string `json:"username" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required,alphanum,min=4"`
+	Username string `form:"username" json:"username" binding:"required,min=6"`
 }
 
 type Claims struct {
@@ -29,7 +30,7 @@ type Claims struct {
 
 func Login(context *gin.Context) {
 	var creds Credentials
-	if err := context.ShouldBindJSON(&creds); err != nil {
+	if err := context.ShouldBind(&creds); err != nil {
 		response.ErrorParam(context, creds)
 		return
 	}
@@ -38,8 +39,9 @@ func Login(context *gin.Context) {
 		Username: creds.Username,
 		Password: creds.Password,
 	}
+	hash := helpers.GetMD5Hash(creds.Password)
 	member, err := userService.UserLogin()
-	if err != nil || member.Id <= 0 {
+	if err != nil || member.Password != hash {
 		response.SuccessButFail(context, consts.InvalidUsernamePassword, consts.InvalidUsernamePassword, nil)
 		return
 	}

@@ -3,9 +3,10 @@ package redis_service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"goskeleton/app/global/variable"
-	"goskeleton/app/model"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -18,6 +19,9 @@ const RedisCacheDefault = 0
 const RedisCacheUser = 1
 const RedisCacheGroup = 2
 
+var rdb [16]*redis.Client
+var rdbCount = 16
+
 var RedisCacheExpired = map[string]time.Duration{
 	// 永远不过期的redis为 -1
 	//"STORE_DETAILS":        -1,
@@ -25,17 +29,48 @@ var RedisCacheExpired = map[string]time.Duration{
 }
 
 type RedisStruct struct {
-	CacheName        string
-	CacheNewName     string
-	CacheValue       interface{}
-	CacheNameIndex   int
-	CacheKey         string
-	OffJsonFormatter int
-	CacheTimeInSec   int
+	CacheName          string
+	CacheNewName       string
+	CacheValue         interface{}
+	CacheNameIndex     int
+	CacheKey           string
+	OffJsonFormatter   int
+	CacheTimeInSec     int
+	CacheLockTimeInSec int
+}
+
+func SetupRedis() {
+	sum := 0
+	for i := 0; i < rdbCount; i++ {
+		rdb[i] = ConnectRedis(i)
+		sum += i
+	}
+}
+
+func GetRedis(index int) *redis.Client {
+	return rdb[index]
+}
+
+func ConnectRedis(index int) *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Username: os.Getenv("REDIS_USERNAME"),
+		Addr:     os.Getenv("REDIS_HOST"),
+		Password: os.Getenv("REDIS_PASSWORD"), // no password set
+		DB:       index,
+		//TLSConfig: &tls.Config{
+		//	InsecureSkipVerify: true,
+		//},
+	})
+	ctx := context.Background()
+	_, err := client.Ping(ctx).Result()
+	if err != nil {
+		variable.ZapLog.Fatal(fmt.Sprintf("Cannot Ping: %v\n", err.Error()))
+	}
+	return client
 }
 
 func (m *RedisStruct) PrepareCacheRead() string {
-	rdb := model.GetRedis(m.CacheNameIndex)
+	rdb := GetRedis(m.CacheNameIndex)
 	ctx := context.TODO()
 	var value *redis.StringCmd
 	if m.CacheKey != "" {
@@ -47,7 +82,7 @@ func (m *RedisStruct) PrepareCacheRead() string {
 }
 
 func (m *RedisStruct) PrepareCacheWrite() bool {
-	rdb := model.GetRedis(m.CacheNameIndex)
+	rdb := GetRedis(m.CacheNameIndex)
 	ctx := context.TODO()
 	duration := 0 * time.Second
 	cacheName := strings.Split(m.CacheName, ":")
@@ -108,8 +143,20 @@ func (m *RedisStruct) PrepareCacheWrite() bool {
 	return true
 }
 
+func (m *RedisStruct) PrepareLockTrial() bool {
+	rdb := GetRedis(m.CacheNameIndex)
+	ctx := context.TODO()
+	flag := rdb.SetNX(ctx, CacheNamePre+strings.ToLower(m.CacheName), 1, time.Duration(m.CacheLockTimeInSec)*time.Second)
+	boolFlag, err := flag.Result()
+	if err != nil {
+		variable.ZapLog.Error(err.Error())
+		return false
+	}
+	return boolFlag
+}
+
 func (m *RedisStruct) PrepareCacheRename() string {
-	rdb := model.GetRedis(m.CacheNameIndex)
+	rdb := GetRedis(m.CacheNameIndex)
 	ctx := context.TODO()
 	var value *redis.StatusCmd
 	value = rdb.Rename(ctx, CacheNamePre+strings.ToLower(m.CacheName), CacheNamePre+strings.ToLower(m.CacheNewName))
@@ -117,7 +164,7 @@ func (m *RedisStruct) PrepareCacheRename() string {
 }
 
 func (m *RedisStruct) GetKeyRange() map[string]string {
-	rdb := model.GetRedis(m.CacheNameIndex)
+	rdb := GetRedis(m.CacheNameIndex)
 	ctx := context.TODO()
 	value := rdb.HGetAll(ctx, CacheNamePre+strings.ToLower(m.CacheName))
 	return value.Val()
@@ -125,7 +172,7 @@ func (m *RedisStruct) GetKeyRange() map[string]string {
 
 func (m *RedisStruct) DelCache() error {
 	var err error
-	rdb := model.GetRedis(m.CacheNameIndex)
+	rdb := GetRedis(m.CacheNameIndex)
 	ctx := context.TODO()
 	if m.CacheKey != "" {
 		err = rdb.HDel(ctx, CacheNamePre+strings.ToLower(m.CacheName), strings.ToLower(m.CacheKey)).Err()

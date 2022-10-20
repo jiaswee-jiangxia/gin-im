@@ -1,8 +1,11 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"goskeleton/app/helpers"
+	"goskeleton/app/service/redis_service"
 
 	"gorm.io/gorm"
 )
@@ -51,18 +54,33 @@ func UserRegister(tx *gorm.DB, username string, email string, pass string, mobil
 	return &registrationClone, nil
 }
 
-func UserLogin(mobileNo string, pass string) (*LoginStruct, error) {
-	var Member *LoginStruct
-	//idx := helpers.ShardHash(mobileNo)
+func UserLogin(username string, pass string) (*Users, error) {
+	var member *Users
+	var err error
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + username,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	cacheData := rdb.PrepareCacheRead()
+	if cacheData != "" {
+		fmt.Println(cacheData)
+		err = json.Unmarshal([]byte(cacheData), &member)
+		if err != nil {
+			return member, err
+		}
+		return member, nil
+	}
 	hash := helpers.GetMD5Hash(pass)
-	err := db.Table("users").
-		Where("username = ?", mobileNo).
+	err = db.Table("users").
+		Where("username = ?", username).
 		Where("password = ?", hash).
-		First(&Member).Error
+		First(&member).Error
 	if err != nil {
 		return nil, err
 	}
-	return Member, nil
+	rdb.CacheValue = member
+	rdb.PrepareCacheWrite()
+	return member, nil
 }
 
 func GetUserByUsername(username string) (*Users, error) {

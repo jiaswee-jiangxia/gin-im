@@ -1,18 +1,14 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"google.golang.org/grpc"
 	"goskeleton/app/global/variable"
 	"goskeleton/app/model"
+	"goskeleton/app/service/redis_service"
 	"goskeleton/app/utils/response"
 	_ "goskeleton/bootstrap"
-	"goskeleton/proto"
 	"goskeleton/routers"
-	"io"
 	"log"
 )
 
@@ -23,7 +19,7 @@ func init() {
 		log.Fatalf("Error loading .env file")
 	}
 	model.Setup()
-	model.SetupRedis()
+	redis_service.SetupRedis()
 	//translation.Setup()
 }
 
@@ -90,18 +86,18 @@ func main() {
 //defer conn.Close()
 //
 //sendServerStreamRequest(conn)
-func sendServerStreamRequest(conn *grpc.ClientConn) {
-	stringClient := ggs.NewUserClient(conn)
-	stringReq := &ggs.ListUserRequest{Username: "tiger1"}
-	stream, _ := stringClient.ListUserServerStream(context.Background(), stringReq)
-	for {
-		item, stream_error := stream.Recv()
-		if stream_error == io.EOF {
-			break
-		}
-		if stream_error != nil {
-			fmt.Println("error", stream_error.Error())
-		}
-		fmt.Println(item.GetData())
-	}
-}
+//func sendServerStreamRequest(conn *grpc.ClientConn) {
+//	stringClient := ggs.NewUserClient(conn)
+//	stringReq := &ggs.ListUserRequest{Username: "tiger1"}
+//	stream, _ := stringClient.ListUserServerStream(context.Background(), stringReq)
+//	for {
+//		item, stream_error := stream.Recv()
+//		if stream_error == io.EOF {
+//			break
+//		}
+//		if stream_error != nil {
+//			fmt.Println("error", stream_error.Error())
+//		}
+//		fmt.Println(item.GetData())
+//	}
+//}
