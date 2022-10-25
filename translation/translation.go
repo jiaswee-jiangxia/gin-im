@@ -1,53 +1,77 @@
-package translation
+package main
 
 import (
-	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"encoding/json"
+	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"goskeleton/app/model"
+	_ "goskeleton/bootstrap"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
-// Bundle var
-var Bundle *i18n.Bundle
-var Loc *i18n.Localizer
-
-// Localizer struct
-type Localizer struct {
-	Localizer *i18n.Localizer
-	Language  string
+type Translation struct {
+	model.BaseModel
+	Lang string
+	Code string
+	Msg  string
 }
 
-// Setup func
-func Setup() {
-	//Bundle = i18n.NewBundle(language.English)
-	//Bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
-	//langs, err := model.GetLanguageList()
-	//if err != nil {
-	//	log.Fatalf("translation.Setup [GetLanguageList] err: %v", err)
-	//}
-	//
-	//for _, lang := range langs {
-	//	//trans, err := model.GetTranslationByLocale("api", lang.Locale)
-	//	//if err != nil {
-	//	//	log.Fatalf("translation.Setup [GetTranslationByLocale] err: %v", err)
-	//	//}
-	//	//
-	//	//var tranStr string
-	//	//
-	//	//for _, tran := range trans {
-	//	//	tranStr = tranStr + tran.Name + " = " + "\"" + tran.Value + "\"\n"
-	//	//}
-	//	Bundle.MustLoadMessageFile("translation/source/" + lang.Locale + ".json")
-	//}
-}
-
-func SetNewLocalizer(locale string) {
-	Loc = i18n.NewLocalizer(Bundle, locale)
-}
-
-func Trans(text string) string {
-	translation, err := Loc.Localize(&i18n.LocalizeConfig{
-		MessageID: text,
-	})
+// 执行翻译小工具 (go run translation/translation.go)
+func main() {
+	langs := []string{"en", "zh-CN", "zh-TW", "vi", "th", "kr", "jp"}
+	content, err := ioutil.ReadFile("translation/source/response.json")
 	if err != nil {
-		return text
+		fmt.Println("failed open")
+		return
 	}
-	return translation
+	var text map[string]string
+	err = json.Unmarshal(content, &text)
+	var fContent string
+
+	model.Setup()
+	db := model.GetDB()
+	for code, item := range text {
+		errText := strings.ReplaceAll(item, "_", " ")
+		humanText := cases.Title(language.Und, cases.NoLower).String(errText)
+		errText = strings.ReplaceAll(humanText, " ", "")
+		fContent += errText + " = \"" + item + "\"\n\t"
+
+		for _, lang := range langs {
+			count := db.Table("translations").
+				Where("code = ?", code).
+				Where("lang = ?", lang).
+				RowsAffected
+
+			if count == 0 {
+				err := db.Table("translations").
+					Create(&Translation{
+						Lang: lang,
+						Code: item,
+						Msg:  humanText,
+					}).Error
+
+				if err != nil {
+					fmt.Println("error:")
+					fmt.Println(err)
+					return
+				}
+			}
+		}
+	}
+	f, err := os.Create("app/global/response/response.go")
+	if err != nil {
+		fmt.Println("error file:")
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	_, err = f.WriteString("package consts\n\n" +
+		"// 此文件不可被直接篡改，请运行翻译小工具，请参考 (translation/translation.go)\n" +
+		"// 任何于此文件的直接篡改，可能会被小工具覆盖而使到系统崩溃。\n" +
+		"var (\n\t" +
+		fContent +
+		")\n")
 }

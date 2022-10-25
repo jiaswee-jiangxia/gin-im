@@ -137,7 +137,7 @@ func AddGroupMember(context *gin.Context) {
 	}
 	for _, i := range req.UserList {
 		if memberExist(memberList, i) {
-			response.SuccessButFail(context, consts.MemberExistInGroup, consts.MemberExistInGroup, nil)
+			response.SuccessButFail(context, consts.MemberAlreadyInGroup, consts.MemberAlreadyInGroup, nil)
 			return
 		}
 	}

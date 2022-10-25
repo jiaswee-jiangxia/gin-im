@@ -1,24 +1,19 @@
 package cors
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"goskeleton/app/helpers"
-	"goskeleton/translation"
 	"net/http"
 	"os"
 )
 
 var domains = []string{
 	"127.0.0.1",
-	"https://www.51766.com",
 }
 
 // 允许跨域
 func Next() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		translation.SetNewLocalizer(c.GetHeader("lang"))
-		fmt.Println(c.GetHeader("lang"))
 		corsOnOff := os.Getenv("CORS_ON_OFF")
 		method := c.Request.Method
 		origin := c.GetHeader("Origin")
