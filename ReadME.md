@@ -24,4 +24,4 @@
 
 ### 小工具
 1. https://github.com/panjf2000/ants (job/worker) - 并发提速4～6倍，服务器低延迟且内存表现稳定，不会无止境扩展。
-2. 
+2. go run translation/translation.go - 执行翻译小工具
