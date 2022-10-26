@@ -60,7 +60,7 @@ func CreateContact(context *gin.Context) {
 		UserId:   strconv.Itoa(int(user.Id)),
 		FriendId: strconv.Itoa(int(targetUser.Id)),
 	}
-	_, err = contactService.GetContactsByBothId()
+	contact, err := contactService.GetContactsByBothId()
 
 	contactService2 := contacts_service.ContactsStruct{
 		UserId:   strconv.Itoa(int(targetUser.Id)),
@@ -90,26 +90,26 @@ func CreateContact(context *gin.Context) {
 		} else {
 			response.SuccessButFail(context, err.Error(), consts.CreateContactSearchContactCrashed, nil)
 		}
+	} else {
+		if contact.Status > -1 {
+			response.SuccessButFail(context, consts.CreateContactRequestDuplicated, consts.CreateContactRequestDuplicated, nil)
+			return
+		}
+		//else {
+		//	contactService.Status = int64(frdStatus)
+		//	_, err = contactService.UpdateContact()
+		//	if err != nil {
+		//		response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+		//	}
+		//	contactService.UserId = strconv.Itoa(int(targetUser.Id))
+		//	contactService.FriendId = strconv.Itoa(int(user.Id))
+		//	_, err = contactService.UpdateContact()
+		//	if err != nil {
+		//		response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+		//	}
+		//}
+		response.Success(context, consts.CreateContactSuccess, nil)
 	}
-	//else {
-	//	if contact.Status > -1 {
-	//		response.SuccessButFail(context, consts.CreateContactRequestDuplicated, consts.CreateContactRequestDuplicated, nil)
-	//		return
-	//	} else {
-	//		contactService.Status = int64(frdStatus)
-	//		_, err = contactService.UpdateContact()
-	//		if err != nil {
-	//			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
-	//		}
-	//		contactService.UserId = strconv.Itoa(int(targetUser.Id))
-	//		contactService.FriendId = strconv.Itoa(int(user.Id))
-	//		_, err = contactService.UpdateContact()
-	//		if err != nil {
-	//			response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
-	//		}
-	//	}
-	//	response.Success(context, consts.CreateContactSuccess, nil)
-	//}
 	return
 }
 
