@@ -28,5 +28,5 @@ jobs:
 
     - name: Run dockerfile
       run:  docker run --rm -p 20191:20191 gin-im-stag &
-            sleep 10 &&
+            sleep 30 &&
             curl http://localhost:20191/app/api/user/profile -I
