@@ -3,10 +3,12 @@ package routers
 import (
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"goskeleton/app/global/consts"
 	"goskeleton/app/global/variable"
 	"goskeleton/app/http/controller/api"
 	"goskeleton/app/http/middleware/cors"
 	"goskeleton/app/http/middleware/jwt"
+	validatorFactory "goskeleton/app/http/validator/core/factory"
 	"io/ioutil"
 )
 
@@ -32,6 +34,11 @@ func InitApiRouter() *gin.Engine {
 	}
 
 	router.Use(cors.Next())
+
+	backend := router.Group("/admin/")
+	{
+		backend.GET("ws", validatorFactory.Create(consts.ValidatorPrefix+"WebsocketConnect"))
+	}
 
 	vApi := router.Group("/app/api")
 	{

@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -33,19 +34,29 @@ func (w *Ws) OnOpen(context *gin.Context) (*Ws, bool) {
 	}
 }
 
+type WsForm struct {
+	WsEvent string `form:"ws_event" json:"ws_event"`
+	WsValue string `form:"value" json:"value"`
+}
+
 // OnMessage 处理业务消息
 func (w *Ws) OnMessage(context *gin.Context) {
+	var wsForm WsForm
 	go w.WsClient.ReadPump(func(messageType int, receivedData []byte) {
 		//参数说明
 		//messageType 消息类型，1=文本
 		//receivedData 服务器接收到客户端（例如js客户端）发来的的数据，[]byte 格式
 
-		tempMsg := "服务器已经收到了你的消息==>" + string(receivedData)
+		//tempMsg := "服务器已经收到了你的消息==>" + string(receivedData)
 		// 回复客户端已经收到消息;
-		if err := w.WsClient.SendMessage(messageType, tempMsg); err != nil {
-			variable.ZapLog.Error("消息发送出现错误", zap.Error(err))
+		_ = json.Unmarshal(receivedData, &wsForm)
+		if wsForm.WsEvent == "global" {
+			w.BroadcastMsg(wsForm.WsValue)
+		} else {
+			if err := w.WsClient.SendMessage(messageType, string(receivedData)); err != nil {
+				variable.ZapLog.Error("消息发送出现错误", zap.Error(err))
+			}
 		}
-
 	}, w.OnError, w.OnClose)
 }
 
@@ -62,7 +73,7 @@ func (w *Ws) OnClose() {
 	w.WsClient.Hub.UnRegister <- w.WsClient // 向hub管道投递一条注销消息，由hub中心负责关闭连接、删除在线数据
 }
 
-//获取在线的全部客户端
+// 获取在线的全部客户端
 func (w *Ws) GetOnlineClients() {
 
 	fmt.Printf("在线客户端数量：%d\n", len(w.WsClient.Hub.Clients))

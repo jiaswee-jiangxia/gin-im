@@ -18,6 +18,7 @@ const CacheNamePre = "im_"
 const RedisCacheDefault = 0
 const RedisCacheUser = 1
 const RedisCacheGroup = 2
+const RedisCacheLock = 3
 
 var rdb [16]*redis.Client
 var rdbCount = 16
@@ -147,10 +148,15 @@ func (m *RedisStruct) PrepareCacheWrite() bool {
 	return true
 }
 
-func (m *RedisStruct) PrepareLockTrial() bool {
-	rdb := GetRedis(m.CacheNameIndex)
+func PrepareLockTrial(cacheNameIndex int, cacheName string, cacheLockValue interface{}, cacheLockTimeInSec int) bool {
+	rdb := GetRedis(cacheNameIndex)
 	ctx := context.TODO()
-	flag := rdb.SetNX(ctx, CacheNamePre+strings.ToLower(m.CacheName), 1, time.Duration(m.CacheLockTimeInSec)*time.Second)
+	tJson, err := json.Marshal(cacheLockValue)
+	if err != nil {
+		variable.ZapLog.Error(err.Error())
+		return false
+	}
+	flag := rdb.SetNX(ctx, CacheNamePre+strings.ToLower(cacheName), string(tJson), time.Duration(cacheLockTimeInSec)*time.Second)
 	boolFlag, err := flag.Result()
 	if err != nil {
 		variable.ZapLog.Error(err.Error())

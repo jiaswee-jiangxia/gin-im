@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"goskeleton/app/global/consts"
 	"goskeleton/app/global/variable"
@@ -24,6 +25,8 @@ func (c Connect) CheckParams(context *gin.Context) {
 	}
 	//2.基本的验证规则没有通过
 	if err := context.ShouldBind(&c); err != nil {
+		fmt.Println(err)
+
 		errs := gin.H{
 			"tips": "请在get参数中提交token信息,demo格式：ws://127.0.0.1:2020?token=this is a series token...",
 			"err":  err.Error(),
@@ -37,6 +40,7 @@ func (c Connect) CheckParams(context *gin.Context) {
 		context.Abort()
 		return
 	} else {
+		fmt.Println(extraAddBindDataContext)
 		if serviceWs, ok := (&controllerWs.Ws{}).OnOpen(extraAddBindDataContext); ok == false {
 			response.Fail(context, consts.WsOpenFailCode, consts.WsOpenFailMsg, consts.WsOpenFailMsg, "")
 		} else {

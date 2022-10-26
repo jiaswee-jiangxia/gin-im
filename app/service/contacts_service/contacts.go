@@ -32,16 +32,16 @@ func (m *ContactsStruct) CreateNewContact() (*model.Contacts, error) {
 	if err != nil {
 		return nil, err
 	}
-	if m.Status > 0 {
-		_, err = model.CreateNewContact(&model.Contacts{
-			UserId:   int64(frdId),
-			FriendId: int64(userId),
-			Status:   m.Status,
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
+	//if m.Status > 0 {
+	//	_, err = model.CreateNewContact(&model.Contacts{
+	//		UserId:   int64(frdId),
+	//		FriendId: int64(userId),
+	//		Status:   m.Status,
+	//	})
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
 	return u, nil
 }
 
