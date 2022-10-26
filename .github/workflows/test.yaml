@@ -16,7 +16,7 @@ jobs:
 
     - name: Build
       run: go mod tidy
-      run: go build -v ./...
+           go build -v ./...
 
     - name: Run
       run: gowatch
