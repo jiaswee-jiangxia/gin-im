@@ -16,12 +16,15 @@ jobs:
 
     - name: Install gowatch
       run: go install github.com/silenceper/gowatch@latest
-      
+
     - name: Import dependency
       run: go mod tidy
     
     # - name: Build
     #   run:  go build -v ./...
 
-    - name: Run
-      run: gowatch
+    - name: Build dockerfile
+      run: docker buildx build --platform linux/amd64 -t gin-im-stag -f .docker/Dockerfile .
+
+    - name: Run dockerfile
+      run: docker run --rm -p 20191:20191 jiasweejiangxia/gin-im-stag
