@@ -67,9 +67,9 @@ func CreateContact(context *gin.Context) {
 		FriendId: strconv.Itoa(int(user.Id)),
 	}
 	contact2, err2 := contactService2.GetContactsByBothId()
-	frdStatus := 1
-	if err2 == gorm.ErrRecordNotFound {
-		frdStatus = 0
+	frdStatus := 0
+	if err2 != gorm.ErrRecordNotFound && contact2.Status > -1 {
+		frdStatus = 1
 	}
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -85,6 +85,7 @@ func CreateContact(context *gin.Context) {
 					response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
 					return
 				}
+
 			}
 			response.Success(context, consts.CreateContactSuccess, nil)
 		} else {
@@ -94,20 +95,21 @@ func CreateContact(context *gin.Context) {
 		if contact.Status > -1 {
 			response.SuccessButFail(context, consts.CreateContactRequestDuplicated, consts.CreateContactRequestDuplicated, nil)
 			return
+		} else {
+			contactService.Status = int64(frdStatus)
+			_, err = contactService.UpdateContact()
+			if err != nil {
+				response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+			}
+			if frdStatus == 1 {
+				contactService.UserId = strconv.Itoa(int(targetUser.Id))
+				contactService.FriendId = strconv.Itoa(int(user.Id))
+				_, err = contactService.UpdateContact()
+				if err != nil {
+					response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
+				}
+			}
 		}
-		//else {
-		//	contactService.Status = int64(frdStatus)
-		//	_, err = contactService.UpdateContact()
-		//	if err != nil {
-		//		response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
-		//	}
-		//	contactService.UserId = strconv.Itoa(int(targetUser.Id))
-		//	contactService.FriendId = strconv.Itoa(int(user.Id))
-		//	_, err = contactService.UpdateContact()
-		//	if err != nil {
-		//		response.SuccessButFail(context, err.Error(), consts.CreateContactFailed, nil)
-		//	}
-		//}
 		response.Success(context, consts.CreateContactSuccess, nil)
 	}
 	return
