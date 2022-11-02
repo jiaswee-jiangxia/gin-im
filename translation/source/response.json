@@ -29,5 +29,6 @@
   "disband_group_failed": "disband_group_failed",
   "cannot_create_grouping_own_acc": "cannot_create_grouping_own_acc",
   "create_grouping_failed": "create_grouping_failed",
-  "create_grouping_success": "create_grouping_success"
+  "create_grouping_success": "create_grouping_success",
+  "waiting_previous_action_to_be_completed": "waiting_previous_action_to_be_completed"
 }

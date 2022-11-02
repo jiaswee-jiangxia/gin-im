@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	consts "goskeleton/app/global/response"
 	"goskeleton/app/helpers"
 	"goskeleton/app/service/redis_service"
 )
@@ -199,12 +200,15 @@ func UpdateIosToken(username *string, iostoken *string) error {
 	return err
 }
 
-func UpdatePassword(username *string, old_password string, new_password string) error {
+func UpdatePassword(username *string, oldPassword string, newPassword string) error {
 	var Member *Users
 	// Redis Lock
-	redis_service.PrepareLockTrial(redis_service.RedisCacheLock, "UPDATE_PASSWORD:"+*username, nil, 60)
-	hash := helpers.GetMD5Hash(old_password)
-	newHash := helpers.GetMD5Hash(new_password)
+	lockFlag := redis_service.PrepareLockTrial(redis_service.RedisCacheLock, "UPDATE_PASSWORD:"+*username, nil, 60)
+	if !lockFlag {
+		return errors.New(consts.WaitingPreviousActionToBeCompleted)
+	}
+	hash := helpers.GetMD5Hash(oldPassword)
+	newHash := helpers.GetMD5Hash(newPassword)
 	err := db.Table("users").
 		Where("username = ?", username).
 		First(&Member).Error

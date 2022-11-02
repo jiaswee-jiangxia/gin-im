@@ -174,8 +174,11 @@ func UpdateProfile(context *gin.Context) {
 		Username: usernameText,
 	}
 	// Redis Lock
-	redis_service.PrepareLockTrial(redis_service.RedisCacheLock, "UPDATE_PROFILE:"+usernameText, nil, 60)
-	time.Sleep(10 * time.Second)
+	lockFlag := redis_service.PrepareLockTrial(redis_service.RedisCacheLock, "UPDATE_PROFILE:"+usernameText, nil, 60)
+	if !lockFlag {
+		response.SuccessButFail(context, consts.WaitingPreviousActionToBeCompleted, consts.WaitingPreviousActionToBeCompleted, nil)
+		return
+	}
 	if prof.Nickname != nil {
 		err = userService.UpdateNickname(prof.Nickname)
 		if err != nil {
