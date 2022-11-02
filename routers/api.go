@@ -80,6 +80,14 @@ func InitApiRouter() *gin.Engine {
 				jwtContactApi.POST("/remove", api.RemoveContact)
 			}
 		}
+		walletApi := vApi.Group("/ewt")
+		{
+			jwtWalletApi := walletApi.Use(jwt.JWT())
+			{
+				jwtWalletApi.GET("/balance", api.ContactList)
+				//jwtWalletApi.POST("/create", api.CreateContact)
+			}
+		}
 	}
 	return router
 }

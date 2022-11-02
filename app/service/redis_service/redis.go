@@ -191,3 +191,13 @@ func (m *RedisStruct) DelCache() error {
 	}
 	return err
 }
+
+func PrepareUnlockTrial(cacheNameIndex int, cacheName string) bool {
+	rdb := GetRedis(cacheNameIndex)
+	ctx := context.TODO()
+	err := rdb.Del(ctx, CacheNamePre+strings.ToLower(cacheName)).Err()
+	if err != nil {
+		return false
+	}
+	return true
+}

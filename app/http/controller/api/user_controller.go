@@ -173,6 +173,9 @@ func UpdateProfile(context *gin.Context) {
 	userService := user_service.TokenStruct{
 		Username: usernameText,
 	}
+	// Redis Lock
+	redis_service.PrepareLockTrial(redis_service.RedisCacheLock, "UPDATE_PROFILE:"+usernameText, nil, 60)
+	time.Sleep(10 * time.Second)
 	if prof.Nickname != nil {
 		err = userService.UpdateNickname(prof.Nickname)
 		if err != nil {
@@ -208,6 +211,8 @@ func UpdateProfile(context *gin.Context) {
 	}
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
+	// Redis UnLock
+	redis_service.PrepareUnlockTrial(redis_service.RedisCacheLock, "UPDATE_PROFILE:"+usernameText)
 	response.Success(context, consts.Success, profile)
 	return
 }

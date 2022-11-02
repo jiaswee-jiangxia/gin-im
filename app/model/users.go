@@ -201,6 +201,8 @@ func UpdateIosToken(username *string, iostoken *string) error {
 
 func UpdatePassword(username *string, old_password string, new_password string) error {
 	var Member *Users
+	// Redis Lock
+	redis_service.PrepareLockTrial(redis_service.RedisCacheLock, "UPDATE_PASSWORD:"+*username, nil, 60)
 	hash := helpers.GetMD5Hash(old_password)
 	newHash := helpers.GetMD5Hash(new_password)
 	err := db.Table("users").
@@ -223,5 +225,7 @@ func UpdatePassword(username *string, old_password string, new_password string) 
 		CacheNameIndex: redis_service.RedisCacheUser,
 	}
 	rdb.DelCache()
+	// Redis Unlock
+	redis_service.PrepareUnlockTrial(redis_service.RedisCacheLock, "UPDATE_PASSWORD")
 	return err
 }
