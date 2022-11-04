@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	consts "goskeleton/app/global/response"
 	"goskeleton/app/helpers"
 	"goskeleton/app/service/redis_service"
@@ -27,6 +28,14 @@ type RegisterStruct struct {
 	Contact  string `gorm:"column:contact" json:"contact"`
 	Email    string `gorm:"column:email" json:"email"`
 	Password string `gorm:"column:password" json:"password"`
+}
+
+type OTP struct {
+	BaseModel
+	Cred       string `gorm:"column:cred" json:"cred"`
+	OTP        string `gorm:"column:otp" json:"otp"`
+	ExpiryTime int64  `gorm:"column:expiry_time" json:"expiry_time"`
+	Purpose    string `gorm:"column:purpose" json:"purpose"`
 }
 
 func UserRegister(username string, email string, pass string, mobileNo string) (*RegisterStruct, error) {
@@ -232,4 +241,33 @@ func UpdatePassword(username *string, oldPassword string, newPassword string) er
 	// Redis Unlock
 	redis_service.PrepareUnlockTrial(redis_service.RedisCacheLock, "UPDATE_PASSWORD")
 	return err
+}
+
+func SaveOTP(cred, otp, purpose string, expiry int64) error {
+	otpObj := OTP{
+		Cred:       cred,
+		OTP:        otp,
+		Purpose:    purpose,
+		ExpiryTime: expiry,
+	}
+	err := db.Table("otp").Create(&otpObj).Error
+	return err
+}
+
+func UserLoginWithEmail(email string, otp string) (*Users, error) {
+	var member = &Users{}
+	var otpp = &OTP{}
+	var err error
+	db.Table("otp").
+		Where("cred = ?", email).
+		Where("otp = ?", otp).First(&otpp)
+	if otpp.Id > 0 { // Record matched
+		err = db.Table("users").
+			Where("email", email).First(&member).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+	fmt.Println(member)
+	return member, nil
 }

@@ -64,6 +64,67 @@ func Login(context *gin.Context) {
 	return
 }
 
+func GetOTP(context *gin.Context) {
+	otp := &user_service.OTP{}
+	if context.Request.URL.Path == "/app/api/user/emailotp" { // Request for email OTP
+		email := Emails{}
+		if err := context.ShouldBind(&email); err != nil {
+			response.ErrorParam(context, email)
+			return
+		}
+		otp.Purpose = "email"
+		otp.Cred = email.Email
+		otp.OTP = "000000"
+		otp.ExpiryTime = 0
+		otp.SaveOTP()
+	}
+
+	return
+}
+
+type Emails struct {
+	Email string `form:"email" json:"email" binding:"required,min=4"`
+}
+type EmailCredentials struct {
+	Email string `form:"email" json:"email" binding:"required,min=4"`
+	OTP   string `form:"otp" json:"otp" binding:"required,min=6"`
+}
+
+func EmailLogin(context *gin.Context) {
+	var creds EmailCredentials
+	if err := context.ShouldBind(&creds); err != nil {
+		response.ErrorParam(context, creds)
+		return
+	}
+	expirationTime := time.Now().Add(720 * time.Hour)
+	userService := user_service.TokenStruct{
+		Email: creds.Email,
+	}
+	member, err := userService.UserLoginWithEmail(creds.OTP)
+	if err != nil || member.Id <= 0 {
+		response.SuccessButFail(context, consts.InvalidUsernamePassword, consts.InvalidUsernamePassword, nil)
+		return
+	}
+	// Create the JWT claims, which includes the username and expiry time
+	claims := &Claims{
+		Username: member.Username,
+		StandardClaims: jwt.StandardClaims{
+			// In JWT, the expiry time is expressed as unix milliseconds
+			ExpiresAt: expirationTime.Unix(),
+			IssuedAt:  time.Now().Unix(),
+			Id:        strconv.FormatInt(member.Id, 10),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	signedString, errSignedString := token.SignedString(variable.PrivateKey)
+	if errSignedString != nil {
+		response.SuccessButFail(context, errSignedString.Error(), consts.Success, nil)
+		return
+	}
+	response.Success(context, consts.Success, signedString)
+	return
+}
+
 type RegisterStruct struct {
 	Username             string `form:"username" json:"username" binding:"required,alphanum,min=4"`
 	Password             string `form:"password" json:"password" binding:"required,min=6"`
