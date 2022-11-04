@@ -103,7 +103,7 @@ func GetOTP(context *gin.Context) {
 		}
 		otp.Purpose = "email"
 		otp.Cred = email.Email
-		otp.OTP = "000000"
+		otp.OTP = "000000" // Generate with OTP generator, hardcode for now
 		otp.ExpiryTime = 0
 		otp.SaveOTP()
 
@@ -112,12 +112,12 @@ func GetOTP(context *gin.Context) {
 		toEmailAddress := email.Email
 		to := []string{toEmailAddress}
 
-		host := "mail.jiangxia.com.sg"
-		port := "587"
+		host := "mail.jiangxia.com.sg" // Email host
+		port := "587"                  // Email host port
 		address := host + ":" + port
 
-		subject := "Subject: This is the subject of the mail\n"
-		body := otp.OTP
+		subject := "Subject: This is the subject of the mail\n" // Email subject
+		body := otp.OTP                                         // OTP code and other message
 		message := []byte(subject + "\n" + body)
 
 		auth := loginAuth{
