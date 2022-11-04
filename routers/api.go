@@ -1,8 +1,6 @@
 package routers
 
 import (
-	"github.com/gin-contrib/pprof"
-	"github.com/gin-gonic/gin"
 	"goskeleton/app/global/consts"
 	"goskeleton/app/global/variable"
 	"goskeleton/app/http/controller/api"
@@ -10,6 +8,9 @@ import (
 	"goskeleton/app/http/middleware/jwt"
 	validatorFactory "goskeleton/app/http/validator/core/factory"
 	"io/ioutil"
+
+	"github.com/gin-contrib/pprof"
+	"github.com/gin-gonic/gin"
 )
 
 // 该路由主要设置门户类网站等前台路由
@@ -45,6 +46,8 @@ func InitApiRouter() *gin.Engine {
 		userApi := vApi.Group("/user")
 		{
 			userApi.POST("/login", api.Login)
+			userApi.POST("/emaillogin", api.EmailLogin)
+			userApi.POST("/emailotp", api.GetOTP)
 			userApi.POST("/register", api.Register)
 			jwtUserGroup := userApi.Use(jwt.JWT())
 			{

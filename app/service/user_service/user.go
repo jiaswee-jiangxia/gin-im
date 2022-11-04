@@ -1,8 +1,9 @@
 package user_service
 
 import (
-	"gorm.io/gorm"
 	"goskeleton/app/model"
+
+	"gorm.io/gorm"
 )
 
 type TokenStruct struct {
@@ -14,8 +15,22 @@ type TokenStruct struct {
 	Tx       *gorm.DB
 }
 
+type OTP struct {
+	Cred       string `form:"cred" json:"cred"`
+	OTP        string `form:"otp" json:"otp"`
+	ExpiryTime int64  `form:"expiry" json:"expiry"`
+	Purpose    string `form:"purpose" json:"purpose"`
+}
+
 func (m *TokenStruct) UserLogin() (*model.Users, error) {
 	member, err := model.UserLogin(m.Username, m.Password)
+	if err != nil {
+		return nil, err
+	}
+	return member, nil
+}
+func (m *TokenStruct) UserLoginWithEmail(Otp string) (*model.Users, error) {
+	member, err := model.UserLoginWithEmail(m.Email, Otp)
 	if err != nil {
 		return nil, err
 	}
@@ -78,5 +93,10 @@ func (m *TokenStruct) UpdateIosToken(IosToken *string) error {
 
 func (m *TokenStruct) UpdatePassword(old_password string, new_password string) error {
 	err := model.UpdatePassword(&m.Username, old_password, new_password)
+	return err
+}
+
+func (o *OTP) SaveOTP() error {
+	err := model.SaveOTP(o.Cred, o.OTP, o.Purpose, o.ExpiryTime)
 	return err
 }

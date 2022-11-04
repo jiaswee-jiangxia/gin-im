@@ -2,9 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	consts "goskeleton/app/global/response"
 	"goskeleton/app/helpers"
+	"net/smtp"
 
 	"goskeleton/app/global/variable"
 	"goskeleton/app/service/redis_service"
@@ -41,6 +43,117 @@ func Login(context *gin.Context) {
 	hash := helpers.GetMD5Hash(creds.Password)
 	member, err := userService.UserLogin()
 	if err != nil || member.Password != hash {
+		response.SuccessButFail(context, consts.InvalidUsernamePassword, consts.InvalidUsernamePassword, nil)
+		return
+	}
+	// Create the JWT claims, which includes the username and expiry time
+	claims := &Claims{
+		Username: member.Username,
+		StandardClaims: jwt.StandardClaims{
+			// In JWT, the expiry time is expressed as unix milliseconds
+			ExpiresAt: expirationTime.Unix(),
+			IssuedAt:  time.Now().Unix(),
+			Id:        strconv.FormatInt(member.Id, 10),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	signedString, errSignedString := token.SignedString(variable.PrivateKey)
+	if errSignedString != nil {
+		response.SuccessButFail(context, errSignedString.Error(), consts.Success, nil)
+		return
+	}
+	response.Success(context, consts.Success, signedString)
+	return
+}
+
+type loginAuth struct { // Our email is unsecured, need to wrap auth
+	username, password string
+}
+
+// LoginAuth is used for smtp login auth
+func LoginAuth(username, password string) smtp.Auth {
+	return &loginAuth{username, password}
+}
+
+func (a loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	return "LOGIN", []byte(a.username), nil
+}
+
+func (a loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if more {
+		switch string(fromServer) {
+		case "Username:":
+			return []byte(a.username), nil
+		case "Password:":
+			return []byte(a.password), nil
+		default:
+			return nil, errors.New("Unknown from server")
+		}
+	}
+	return nil, nil
+}
+
+func GetOTP(context *gin.Context) {
+	otp := &user_service.OTP{}
+	if context.Request.URL.Path == "/app/api/user/emailotp" { // Request for email OTP
+		email := Emails{}
+		if err := context.ShouldBind(&email); err != nil {
+			response.ErrorParam(context, email)
+			return
+		}
+		otp.Purpose = "email"
+		otp.Cred = email.Email
+		otp.OTP = "000000" // Generate with OTP generator, hardcode for now
+		otp.ExpiryTime = 0
+		otp.SaveOTP()
+
+		from := "your_email"              // Replace with sender email
+		password := "your_email_password" // Replace with sender email password
+		toEmailAddress := email.Email
+		to := []string{toEmailAddress}
+
+		host := "mail.jiangxia.com.sg" // Email host
+		port := "587"                  // Email host port
+		address := host + ":" + port
+
+		subject := "Subject: This is the subject of the mail\n" // Email subject
+		body := otp.OTP                                         // OTP code and other message
+		message := []byte(subject + "\n" + body)
+
+		auth := loginAuth{
+			username: from,
+			password: password,
+		}
+		fmt.Println(message)
+		err := smtp.SendMail(address, auth, from, to, message)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
+
+type Emails struct {
+	Email string `form:"email" json:"email" binding:"required,min=4"`
+}
+type EmailCredentials struct {
+	Email string `form:"email" json:"email" binding:"required,min=4"`
+	OTP   string `form:"otp" json:"otp" binding:"required,min=6"`
+}
+
+func EmailLogin(context *gin.Context) {
+	var creds EmailCredentials
+	if err := context.ShouldBind(&creds); err != nil {
+		response.ErrorParam(context, creds)
+		return
+	}
+	expirationTime := time.Now().Add(720 * time.Hour)
+	userService := user_service.TokenStruct{
+		Email: creds.Email,
+	}
+	member, err := userService.UserLoginWithEmail(creds.OTP)
+	if err != nil || member.Id <= 0 {
 		response.SuccessButFail(context, consts.InvalidUsernamePassword, consts.InvalidUsernamePassword, nil)
 		return
 	}
