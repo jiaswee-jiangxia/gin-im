@@ -46,8 +46,7 @@ func InitApiRouter() *gin.Engine {
 		userApi := vApi.Group("/user")
 		{
 			userApi.POST("/login", api.Login)
-			userApi.POST("/emaillogin", api.EmailLogin)
-			userApi.POST("/emailotp", api.GetOTP)
+			userApi.POST("/otp", api.GetOTP)
 			userApi.POST("/register", api.Register)
 			jwtUserGroup := userApi.Use(jwt.JWT())
 			{
