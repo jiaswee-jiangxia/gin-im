@@ -2,9 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	consts "goskeleton/app/global/response"
 	"goskeleton/app/helpers"
+	"net/smtp"
 
 	"goskeleton/app/global/variable"
 	"goskeleton/app/service/redis_service"
@@ -64,6 +66,33 @@ func Login(context *gin.Context) {
 	return
 }
 
+type loginAuth struct { // Our email is unsecured, need to wrap auth
+	username, password string
+}
+
+// LoginAuth is used for smtp login auth
+func LoginAuth(username, password string) smtp.Auth {
+	return &loginAuth{username, password}
+}
+
+func (a loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	return "LOGIN", []byte(a.username), nil
+}
+
+func (a loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if more {
+		switch string(fromServer) {
+		case "Username:":
+			return []byte(a.username), nil
+		case "Password:":
+			return []byte(a.password), nil
+		default:
+			return nil, errors.New("Unknown from server")
+		}
+	}
+	return nil, nil
+}
+
 func GetOTP(context *gin.Context) {
 	otp := &user_service.OTP{}
 	if context.Request.URL.Path == "/app/api/user/emailotp" { // Request for email OTP
@@ -77,6 +106,29 @@ func GetOTP(context *gin.Context) {
 		otp.OTP = "000000"
 		otp.ExpiryTime = 0
 		otp.SaveOTP()
+
+		from := "your_email"              // Replace with sender email
+		password := "your_email_password" // Replace with sender email password
+		toEmailAddress := email.Email
+		to := []string{toEmailAddress}
+
+		host := "mail.jiangxia.com.sg"
+		port := "587"
+		address := host + ":" + port
+
+		subject := "Subject: This is the subject of the mail\n"
+		body := otp.OTP
+		message := []byte(subject + "\n" + body)
+
+		auth := loginAuth{
+			username: from,
+			password: password,
+		}
+		fmt.Println(message)
+		err := smtp.SendMail(address, auth, from, to, message)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return
