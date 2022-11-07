@@ -21,6 +21,6 @@ func ImUpdateRegister(context *gin.Context) {
 	}
 
 	query, _ := helpers.ImSignEncryption(creds)
-	response.SuccessButFail(context, consts.Success, consts.Success, query)
+	response.Success(context, consts.Success, query)
 	return
 }
