@@ -6,6 +6,7 @@ import (
 	"goskeleton/app/http/controller/api"
 	"goskeleton/app/http/middleware/cors"
 	"goskeleton/app/http/middleware/jwt"
+	"goskeleton/app/http/middleware/sign_check"
 	validatorFactory "goskeleton/app/http/validator/core/factory"
 	"io/ioutil"
 
@@ -41,8 +42,13 @@ func InitApiRouter() *gin.Engine {
 		backend.GET("ws", validatorFactory.Create(consts.ValidatorPrefix+"WebsocketConnect"))
 	}
 
+	router.POST("/app/api/user/login", api.Login)
+	router.POST("/app/api/user/otp", api.GetOTP)
+	router.POST("/app/api/user/register", api.Register)
+
 	vApi := router.Group("/app/api")
 	{
+		vApi.Use(sign_check.Next())
 		imApi := vApi.Group("/im")
 		{
 			imApi.POST("/update-register", api.ImUpdateRegister)
@@ -50,9 +56,6 @@ func InitApiRouter() *gin.Engine {
 
 		userApi := vApi.Group("/user")
 		{
-			userApi.POST("/login", api.Login)
-			userApi.POST("/otp", api.GetOTP)
-			userApi.POST("/register", api.Register)
 			jwtUserGroup := userApi.Use(jwt.JWT())
 			{
 				jwtUserGroup.GET("/profile", api.GetProfile)

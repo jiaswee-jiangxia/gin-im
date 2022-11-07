@@ -239,7 +239,7 @@ func UpdatePassword(username *string, oldPassword string, newPassword string) er
 	}
 	rdb.DelCache()
 	// Redis Unlock
-	redis_service.PrepareUnlockTrial(redis_service.RedisCacheLock, "UPDATE_PASSWORD")
+	redis_service.PrepareUnlockTrial(redis_service.RedisCacheLock, "UPDATE_PASSWORD:"+*username)
 	return err
 }
 
