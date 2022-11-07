@@ -43,6 +43,11 @@ func InitApiRouter() *gin.Engine {
 
 	vApi := router.Group("/app/api")
 	{
+		imApi := vApi.Group("/im")
+		{
+			imApi.POST("/update-register", api.ImUpdateRegister)
+		}
+
 		userApi := vApi.Group("/user")
 		{
 			userApi.POST("/login", api.Login)
@@ -80,14 +85,6 @@ func InitApiRouter() *gin.Engine {
 				jwtContactApi.POST("/grouping", api.CreateGrouping)
 				//jwtContactApi.POST("/accept", api.AcceptContact)
 				jwtContactApi.POST("/remove", api.RemoveContact)
-			}
-		}
-		walletApi := vApi.Group("/ewt")
-		{
-			jwtWalletApi := walletApi.Use(jwt.JWT())
-			{
-				jwtWalletApi.GET("/balance", api.ContactList)
-				//jwtWalletApi.POST("/create", api.CreateContact)
 			}
 		}
 	}
