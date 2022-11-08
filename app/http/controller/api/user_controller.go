@@ -29,6 +29,10 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+type Token struct {
+	Token string `json:"token"`
+}
+
 func Login(context *gin.Context) {
 	var creds Credentials
 	if err := context.ShouldBind(&creds); err != nil {
@@ -73,7 +77,7 @@ func LoginByUsername(context *gin.Context, creds Credentials) {
 		response.SuccessButFail(context, errSignedString.Error(), consts.Success, nil)
 		return
 	}
-	response.Success(context, consts.Success, signedString)
+	response.Success(context, consts.Success, &Token{Token: signedString})
 	return
 }
 
@@ -104,7 +108,7 @@ func LoginByEmail(context *gin.Context, creds Credentials) {
 		response.SuccessButFail(context, errSignedString.Error(), consts.Success, nil)
 		return
 	}
-	response.Success(context, consts.Success, signedString)
+	response.Success(context, consts.Success, &Token{Token: signedString})
 	return
 }
 
