@@ -6,7 +6,6 @@ import (
 	"goskeleton/app/http/controller/api"
 	"goskeleton/app/http/middleware/cors"
 	"goskeleton/app/http/middleware/jwt"
-	"goskeleton/app/http/middleware/sign_check"
 	validatorFactory "goskeleton/app/http/validator/core/factory"
 	"io/ioutil"
 
@@ -48,7 +47,7 @@ func InitApiRouter() *gin.Engine {
 
 	vApi := router.Group("/app/api")
 	{
-		vApi.Use(sign_check.Next())
+		//vApi.Use(sign_check.Next())
 		imApi := vApi.Group("/im")
 		{
 			imApi.POST("/update-register", api.ImUpdateRegister)
