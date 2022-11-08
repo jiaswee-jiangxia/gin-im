@@ -360,9 +360,9 @@ func UpdateToken(context *gin.Context) {
 }
 
 type UpdatePasswordStruct struct {
-	OldPassword     string `json:"old_password" binding:"required"`
-	NewPassword     string `json:"new_password" binding:"required"`
-	ConfirmPassword string `json:"confirmation_password" binding:"required"`
+	OldPassword     string `form:"old_password" json:"old_password" binding:"required"`
+	NewPassword     string `form:"new_password" json:"new_password" binding:"required"`
+	ConfirmPassword string `form:"confirmation_password" json:"confirmation_password" binding:"required"`
 }
 
 func UpdatePassword(context *gin.Context) {
@@ -374,7 +374,7 @@ func UpdatePassword(context *gin.Context) {
 	usernameText := fmt.Sprintf("%v", username)
 
 	var passwords UpdatePasswordStruct
-	if err := context.ShouldBindJSON(&passwords); err != nil { // Get request data
+	if err := context.ShouldBind(&passwords); err != nil { // Get request data
 		response.ErrorParam(context, passwords)
 		return
 	}

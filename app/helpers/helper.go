@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"crypto/aes"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -45,6 +46,22 @@ func ParseToken(str string) (*Claims, string) {
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])
+}
+
+func EncryptAES(key []byte, plaintext string) string {
+	// create cipher
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		return err.Error()
+	}
+
+	// allocate space for ciphered data
+	out := make([]byte, len(plaintext))
+
+	// encrypt
+	c.Encrypt(out, []byte(plaintext))
+	// return hex string
+	return hex.EncodeToString(out)
 }
 
 func Contains(s []string, str string) bool {

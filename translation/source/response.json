@@ -1,4 +1,5 @@
 {
+  "unauthorized": "unauthorized",
   "ok": "success",
   "not_available": "failed",
   "user_found": "user_found",
