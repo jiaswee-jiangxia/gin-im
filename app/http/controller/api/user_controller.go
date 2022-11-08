@@ -159,11 +159,18 @@ func GetOTP(context *gin.Context) {
 }
 
 type RegisterStruct struct {
-	Username             string `form:"username" json:"username" binding:"required,alphanum,min=4"`
-	Password             string `form:"password" json:"password" binding:"required,min=6"`
-	ConfirmationPassword string `form:"confirmation_password" json:"confirmation_password" binding:"required,min=6"`
-	Email                string `form:"email" json:"email" binding:"email"`
-	Contact              string `form:"contact" json:"contact" binding:"required,min=10"`
+	Username             string    `form:"username" json:"username" binding:"required,alphanum,min=4"`
+	Password             string    `form:"password" json:"password" binding:"required,min=6"`
+	ConfirmationPassword string    `form:"confirmation_password" json:"confirmation_password" binding:"required,min=6"`
+	Email                string    `form:"email" json:"email" binding:"email"`
+	Contact              string    `form:"contact" json:"contact" binding:"required"`
+	PhoneCode            PhoneCode `form:"phone_code" json:"phone_code" binding:"required"`
+}
+
+type PhoneCode struct {
+	Country     string `form:"country" json:"country" binding:"required"`
+	Code        string `form:"code" json:"code" binding:"required"`
+	CountryFull string `form:"country_full" json:"country_full" binding:"required"`
 }
 
 func Register(context *gin.Context) {
@@ -179,10 +186,13 @@ func Register(context *gin.Context) {
 
 	expirationTime := time.Now().Add(720 * time.Minute)
 	userService := user_service.TokenStruct{
-		Username: creds.Username,
-		Contact:  creds.Contact,
-		Email:    creds.Email,
-		Password: creds.Password,
+		Username:     creds.Username,
+		Contact:      creds.Contact,
+		Email:        creds.Email,
+		Password:     creds.Password,
+		PhoneCountry: creds.PhoneCode.Country,
+		PhoneCode:    creds.PhoneCode.Code,
+		CountryFull:  creds.PhoneCode.CountryFull,
 	}
 	member, err := userService.UserRegister()
 	if err != nil {
