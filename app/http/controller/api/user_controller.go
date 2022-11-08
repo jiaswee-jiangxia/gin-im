@@ -205,7 +205,7 @@ func Register(context *gin.Context) {
 		response.SuccessButFail(context, errSignedString.Error(), consts.Failed, nil)
 		return
 	}
-	response.Success(context, consts.Success, signedString)
+	response.Success(context, consts.Success, &Token{Token: signedString})
 	return
 }
 
