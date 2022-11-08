@@ -24,10 +24,13 @@ type Users struct {
 
 type RegisterStruct struct {
 	BaseModel
-	Username string `gorm:"column:username" json:"username"`
-	Contact  string `gorm:"column:contact" json:"contact"`
-	Email    string `gorm:"column:email" json:"email"`
-	Password string `gorm:"column:password" json:"password"`
+	Username     string `gorm:"column:username" json:"username"`
+	Contact      string `gorm:"column:contact" json:"contact"`
+	Email        string `gorm:"column:email" json:"email"`
+	Password     string `gorm:"column:password" json:"password"`
+	PhoneCountry string `gorm:"column:country" json:"country"`
+	PhoneCode    string `gorm:"column:phone_code" json:"phone_code"`
+	CountryFull  string `gorm:"column:country_full" json:"country_full"`
 }
 
 type OTP struct {
@@ -38,7 +41,8 @@ type OTP struct {
 	Purpose    string `gorm:"column:purpose" json:"purpose"`
 }
 
-func UserRegister(username string, email string, pass string, mobileNo string) (*RegisterStruct, error) {
+func UserRegister(username string, email string, pass string, mobileNo string,
+	country string, phone_code string, country_full string) (*RegisterStruct, error) {
 	var checkUser *Users
 	var err error
 	rdb := redis_service.RedisStruct{
@@ -59,10 +63,13 @@ func UserRegister(username string, email string, pass string, mobileNo string) (
 	}
 	hash := helpers.GetMD5Hash(pass)
 	registrationClone := &RegisterStruct{
-		Username: username,
-		Email:    email,
-		Contact:  mobileNo,
-		Password: hash,
+		Username:     username,
+		Email:        email,
+		Contact:      mobileNo,
+		Password:     hash,
+		PhoneCountry: country,
+		PhoneCode:    phone_code,
+		CountryFull:  country_full,
 	}
 	err = db.Table("users").Create(registrationClone).Error
 	if err != nil {

@@ -29,6 +29,10 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+type Token struct {
+	Token string `json:"token"`
+}
+
 func Login(context *gin.Context) {
 	var creds Credentials
 	if err := context.ShouldBind(&creds); err != nil {
@@ -73,7 +77,7 @@ func LoginByUsername(context *gin.Context, creds Credentials) {
 		response.SuccessButFail(context, errSignedString.Error(), consts.Success, nil)
 		return
 	}
-	response.Success(context, consts.Success, signedString)
+	response.Success(context, consts.Success, &Token{Token: signedString})
 	return
 }
 
@@ -104,7 +108,7 @@ func LoginByEmail(context *gin.Context, creds Credentials) {
 		response.SuccessButFail(context, errSignedString.Error(), consts.Success, nil)
 		return
 	}
-	response.Success(context, consts.Success, signedString)
+	response.Success(context, consts.Success, &Token{Token: signedString})
 	return
 }
 
@@ -155,11 +159,18 @@ func GetOTP(context *gin.Context) {
 }
 
 type RegisterStruct struct {
-	Username             string `form:"username" json:"username" binding:"required,alphanum,min=4"`
-	Password             string `form:"password" json:"password" binding:"required,min=6"`
-	ConfirmationPassword string `form:"confirmation_password" json:"confirmation_password" binding:"required,min=6"`
-	Email                string `form:"email" json:"email" binding:"email"`
-	Contact              string `form:"contact" json:"contact" binding:"required,min=10"`
+	Username             string    `form:"username" json:"username" binding:"required,alphanum,min=4"`
+	Password             string    `form:"password" json:"password" binding:"required,min=6"`
+	ConfirmationPassword string    `form:"confirmation_password" json:"confirmation_password" binding:"required,min=6"`
+	Email                string    `form:"email" json:"email" binding:"email"`
+	Contact              string    `form:"contact" json:"contact" binding:"required"`
+	PhoneCode            PhoneCode `form:"phone_code" json:"phone_code" binding:"required"`
+}
+
+type PhoneCode struct {
+	Country     string `form:"country" json:"country" binding:"required"`
+	Code        string `form:"code" json:"code" binding:"required"`
+	CountryFull string `form:"country_full" json:"country_full" binding:"required"`
 }
 
 func Register(context *gin.Context) {
@@ -175,10 +186,13 @@ func Register(context *gin.Context) {
 
 	expirationTime := time.Now().Add(720 * time.Minute)
 	userService := user_service.TokenStruct{
-		Username: creds.Username,
-		Contact:  creds.Contact,
-		Email:    creds.Email,
-		Password: creds.Password,
+		Username:     creds.Username,
+		Contact:      creds.Contact,
+		Email:        creds.Email,
+		Password:     creds.Password,
+		PhoneCountry: creds.PhoneCode.Country,
+		PhoneCode:    creds.PhoneCode.Code,
+		CountryFull:  creds.PhoneCode.CountryFull,
 	}
 	member, err := userService.UserRegister()
 	if err != nil {
@@ -201,7 +215,7 @@ func Register(context *gin.Context) {
 		response.SuccessButFail(context, errSignedString.Error(), consts.Failed, nil)
 		return
 	}
-	response.Success(context, consts.Success, signedString)
+	response.Success(context, consts.Success, &Token{Token: signedString})
 	return
 }
 

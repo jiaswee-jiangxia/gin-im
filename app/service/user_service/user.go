@@ -7,12 +7,15 @@ import (
 )
 
 type TokenStruct struct {
-	Username string
-	Email    string
-	Contact  string
-	Password string
-	UserId   string
-	Tx       *gorm.DB
+	Username     string
+	Email        string
+	Contact      string
+	Password     string
+	UserId       string
+	Tx           *gorm.DB
+	PhoneCountry string
+	PhoneCode    string
+	CountryFull  string
 }
 
 type OTP struct {
@@ -38,7 +41,7 @@ func (m *TokenStruct) UserLoginWithEmail(Otp string) (*model.Users, error) {
 }
 
 func (m *TokenStruct) UserRegister() (*model.RegisterStruct, error) {
-	member, err := model.UserRegister(m.Username, m.Email, m.Password, m.Contact)
+	member, err := model.UserRegister(m.Username, m.Email, m.Password, m.Contact, m.PhoneCountry, m.PhoneCode, m.CountryFull)
 	if err != nil {
 		return nil, err
 	}
