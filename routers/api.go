@@ -42,8 +42,8 @@ func InitApiRouter() *gin.Engine {
 	}
 
 	router.POST("/app/api/account/login", api.Login)
-	router.POST("/app/api/account/otp", api.GetOTP)
 	router.POST("/app/api/account/register", api.Register)
+	router.POST("/app/api/account/vcode/get_vcode", api.GetVcode)
 
 	vApi := router.Group("/app/api")
 	{
@@ -61,7 +61,8 @@ func InitApiRouter() *gin.Engine {
 				jwtAccountApi.GET("/profile", api.GetProfile)
 				jwtAccountApi.POST("update/profile", api.UpdateProfile)
 				jwtAccountApi.POST("update/token", api.UpdateToken)
-				jwtAccountApi.POST("update/password", api.UpdatePassword)
+				jwtAccountApi.POST("change_password", api.UpdatePassword)
+				jwtAccountApi.GET("my_phone", api.GetPhoneNo)
 			}
 		}
 		blackUserApi := vApi.Group("/black_user")

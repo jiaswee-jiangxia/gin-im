@@ -5,7 +5,6 @@ import (
 	"fmt"
 	consts "goskeleton/app/global/response"
 	"goskeleton/app/helpers"
-	"net/smtp"
 
 	"goskeleton/app/global/variable"
 	"goskeleton/app/service/redis_service"
@@ -19,9 +18,9 @@ import (
 )
 
 type Credentials struct {
-	Type           string `form:"type" json:"type" binding:"required"`
-	Verification   string `form:"verification" json:"verification" binding:"required"`
-	UserIdentifier string `form:"user_identifier" json:"user_identifier" binding:"required"`
+	Type     string `form:"type" json:"type" binding:"required"`
+	Passcode string `form:"passcode" json:"passcode"`
+	Id       string `form:"id" json:"id" binding:"required"`
 }
 
 type Claims struct {
@@ -39,8 +38,8 @@ func Login(context *gin.Context) {
 		response.ErrorParam(context, creds)
 		return
 	}
-	if creds.Type == "username" {
-		LoginByUsername(context, creds)
+	if creds.Type == "password" {
+		LoginByPassword(context, creds)
 		return
 	}
 	if creds.Type == "email" {
@@ -49,13 +48,13 @@ func Login(context *gin.Context) {
 	}
 }
 
-func LoginByUsername(context *gin.Context, creds Credentials) {
+func LoginByPassword(context *gin.Context, creds Credentials) {
 	expirationTime := time.Now().Add(720 * time.Hour)
 	userService := user_service.TokenStruct{
-		Username: creds.UserIdentifier,
-		Password: creds.Verification,
+		Username: creds.Id,
+		Password: &creds.Passcode,
 	}
-	hash := helpers.GetMD5Hash(creds.Verification)
+	hash := helpers.GetMD5Hash(creds.Passcode)
 	member, err := userService.UserLogin()
 	if err != nil || member.Password != hash {
 		response.SuccessButFail(context, consts.InvalidUsernamePassword, consts.InvalidUsernamePassword, nil)
@@ -84,9 +83,9 @@ func LoginByUsername(context *gin.Context, creds Credentials) {
 func LoginByEmail(context *gin.Context, creds Credentials) {
 	expirationTime := time.Now().Add(720 * time.Hour)
 	userService := user_service.TokenStruct{
-		Email: creds.UserIdentifier,
+		Email: &creds.Id,
 	}
-	member, err := userService.UserLoginWithEmail(creds.Verification)
+	member, err := userService.UserLoginWithEmail(creds.Id)
 	if err != nil || member.Id <= 0 {
 
 		response.SuccessButFail(context, consts.InvalidUsernamePassword, consts.InvalidUsernamePassword, nil)
@@ -112,65 +111,21 @@ func LoginByEmail(context *gin.Context, creds Credentials) {
 	return
 }
 
-type OtpRequest struct {
-	Purpose string `form:"purpose" json:"purpose" binding:"required"`
-	Item    string `form:"item" json:"item" binding:"required"`
-}
-
-func GetOTP(context *gin.Context) {
-	otp := &user_service.OTP{}
-	Req := OtpRequest{}
-	if err := context.ShouldBind(&Req); err != nil {
-		response.ErrorParam(context, Req)
-		return
-	}
-	if Req.Purpose == "email" { // Request for email OTP
-		otp.Purpose = "email"
-		otp.Cred = Req.Item
-		otp.OTP = "000000" // Generate with OTP generator, hardcode for now
-		otp.ExpiryTime = 0
-		otp.SaveOTP()
-
-		from := "your_email"              // Replace with sender email
-		password := "your_email_password" // Replace with sender email password
-		toEmailAddress := Req.Item
-		to := []string{toEmailAddress}
-
-		host := "mail.jiangxia.com.sg" // Email host
-		port := "587"                  // Email host port
-		address := host + ":" + port
-
-		subject := "Subject: This is the subject of the mail\n" // Email subject
-		body := otp.OTP                                         // OTP code and other message
-		message := []byte(subject + "\n" + body)
-
-		auth := helpers.LoginAuthWrapper{
-			Username: from,
-			Password: password,
-		}
-		fmt.Println(message)
-		err := smtp.SendMail(address, auth, from, to, message)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return
-}
-
 type RegisterStruct struct {
+	Method               string    `form:"method" json:"method" binding:"required"`
 	Username             string    `form:"username" json:"username" binding:"required,alphanum,min=4"`
-	Password             string    `form:"password" json:"password" binding:"required,min=6"`
-	ConfirmationPassword string    `form:"confirmation_password" json:"confirmation_password" binding:"required,min=6"`
-	Email                string    `form:"email" json:"email" binding:"email"`
-	Contact              string    `form:"contact" json:"contact" binding:"required"`
-	PhoneCode            PhoneCode `form:"phone_code" json:"phone_code" binding:"required"`
+	Password             string    `form:"password" json:"password"`
+	ConfirmationPassword string    `form:"confirmation_password" json:"confirmation_password"`
+	Email                *string   `form:"email" json:"email,omitempty" binding:"omitempty,email"`
+	Contact              string    `form:"contact" json:"contact"`
+	Vcode                string    `form:"vcode" json:"vcode"`
+	PhoneCode            PhoneCode `form:"phone_code" json:"phone_code"`
 }
 
 type PhoneCode struct {
-	Country     string `form:"country" json:"country" binding:"required"`
-	Code        string `form:"code" json:"code" binding:"required"`
-	CountryFull string `form:"country_full" json:"country_full" binding:"required"`
+	Country     string `form:"country" json:"country"`
+	Code        string `form:"code" json:"code"`
+	CountryFull string `form:"country_full" json:"country_full"`
 }
 
 func Register(context *gin.Context) {
@@ -179,21 +134,41 @@ func Register(context *gin.Context) {
 		response.ErrorParam(context, creds)
 		return
 	}
-	if creds.Password != creds.ConfirmationPassword {
-		response.SuccessButFail(context, consts.WrongConfirmationPassword, consts.Failed, nil)
+	expirationTime := time.Now().Add(720 * time.Minute)
+	userService := user_service.TokenStruct{}
+
+	switch method := creds.Method; method {
+	case "password":
+		if creds.Password != creds.ConfirmationPassword {
+			response.SuccessButFail(context, consts.WrongConfirmationPassword, consts.Failed, nil)
+			return
+		}
+		userService = user_service.TokenStruct{
+			Username: creds.Username,
+			Password: &creds.Password,
+		}
+	case "email":
+		// TODO:match vcode
+		// TODO:check duplicate email
+		userService = user_service.TokenStruct{
+			Email: creds.Email,
+			Vcode: creds.Vcode,
+		}
+	case "phone":
+		// TODO:match vcode
+		// TODO:check duplicate phone
+		userService = user_service.TokenStruct{
+			Contact:      &creds.Contact,
+			PhoneCountry: &creds.PhoneCode.Country,
+			PhoneCode:    creds.PhoneCode.Code,
+			CountryFull:  creds.PhoneCode.CountryFull,
+			Vcode:        creds.Vcode,
+		}
+	default:
+		fmt.Println("Error")
 		return
 	}
-
-	expirationTime := time.Now().Add(720 * time.Minute)
-	userService := user_service.TokenStruct{
-		Username:     creds.Username,
-		Contact:      creds.Contact,
-		Email:        creds.Email,
-		Password:     creds.Password,
-		PhoneCountry: creds.PhoneCode.Country,
-		PhoneCode:    creds.PhoneCode.Code,
-		CountryFull:  creds.PhoneCode.CountryFull,
-	}
+	fmt.Println(userService.Email)
 	member, err := userService.UserRegister()
 	if err != nil {
 		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
@@ -416,8 +391,32 @@ func UpdatePassword(context *gin.Context) {
 	return
 }
 
+func GetPhoneNo(context *gin.Context) {
+	var err error
+  username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, consts.Failed, nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+  
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	profile, err := userService.UserProfile()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
+		return
+	}
+  
+	bytes := []byte(`{"PhoneNo":` + profile.Contact + "}")
+	var data map[string]interface{} = make(map[string]interface{})
+	json.Unmarshal(bytes, &data)
+	response.Success(context, consts.Success, data)
+}
+
+
 func RefreshToken(context *gin.Context) {
-	username, exist := context.Get("username")
+  username, exist := context.Get("username")
 	if !exist {
 		response.Success(context, consts.Failed, nil)
 	}
@@ -442,6 +441,7 @@ func RefreshToken(context *gin.Context) {
 		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
+  
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
 	// Create the JWT claims, which includes the username and expiry time

@@ -7,33 +7,34 @@ import (
 )
 
 type TokenStruct struct {
-	Username     string
-	Email        string
-	Contact      string
-	Password     string
-	UserId       string
+	Username     string  `json:"username,omitempty"`
+	Email        *string `json:"email,omitempty"`
+	Contact      *string `json:"contact,omitempty"`
+	Password     *string `json:"password,omitempty"`
+	UserId       string  `json:"user_id,omitempty"`
 	Tx           *gorm.DB
-	PhoneCountry string
-	PhoneCode    string
-	CountryFull  string
+	PhoneCountry *string `json:"country,omitempty"`
+	PhoneCode    string  `json:"code,omitempty"`
+	CountryFull  string  `json:"country_full,omitempty"`
+	Vcode        string  `json:"vcode,omitempty"`
 }
 
-type OTP struct {
+type Vcode struct {
 	Cred       string `form:"cred" json:"cred"`
-	OTP        string `form:"otp" json:"otp"`
+	Vcode      string `form:"vcode" json:"vcode"`
 	ExpiryTime int64  `form:"expiry" json:"expiry"`
 	Purpose    string `form:"purpose" json:"purpose"`
 }
 
 func (m *TokenStruct) UserLogin() (*model.Users, error) {
-	member, err := model.UserLogin(m.Username, m.Password)
+	member, err := model.UserLogin(m.Username, *m.Password)
 	if err != nil {
 		return nil, err
 	}
 	return member, nil
 }
 func (m *TokenStruct) UserLoginWithEmail(Otp string) (*model.Users, error) {
-	member, err := model.UserLoginWithEmail(m.Email, Otp)
+	member, err := model.UserLoginWithEmail(*m.Email, Otp)
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +97,5 @@ func (m *TokenStruct) UpdateIosToken(IosToken *string) error {
 
 func (m *TokenStruct) UpdatePassword(old_password string, new_password string) error {
 	err := model.UpdatePassword(&m.Username, old_password, new_password)
-	return err
-}
-
-func (o *OTP) SaveOTP() error {
-	err := model.SaveOTP(o.Cred, o.OTP, o.Purpose, o.ExpiryTime)
 	return err
 }
