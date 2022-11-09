@@ -24,17 +24,15 @@ type Users struct {
 
 type RegisterStruct struct {
 	BaseModel
-	Username     string `gorm:"column:username" json:"username"`
-	Contact      string `gorm:"column:contact" json:"contact"`
-	Email        string `gorm:"column:email" json:"email"`
-	Password     string `gorm:"column:password" json:"password"`
-	PhoneCountry string `gorm:"column:country" json:"country"`
-	PhoneCode    string `gorm:"column:phone_code" json:"phone_code"`
-	CountryFull  string `gorm:"column:country_full" json:"country_full"`
+	Username     string  `gorm:"column:username" json:"username,omitempty"`
+	Contact      *string `gorm:"column:contact" json:"contact,omitempty"`
+	Email        *string `gorm:"column:email" json:"email,omitempty"`
+	Password     *string `gorm:"column:password" json:"password,omitempty"`
+	PhoneCountry *string `gorm:"column:country_code" json:"country_code,omitempty"`
 }
 
-func UserRegister(username string, email string, pass string, mobileNo string,
-	country string, phone_code string, country_full string) (*RegisterStruct, error) {
+func UserRegister(username string, email *string, pass *string, mobileNo *string,
+	country *string, phone_code string, country_full string) (*RegisterStruct, error) {
 	var checkUser *Users
 	var err error
 	rdb := redis_service.RedisStruct{
@@ -45,23 +43,27 @@ func UserRegister(username string, email string, pass string, mobileNo string,
 	if cacheData != "" {
 		return nil, errors.New("username_is_used")
 	} else {
-		err = db.Table("users").
-			Where("username", username).First(&checkUser).Error
+		db.Table("users").Where("username", username).First(&checkUser)
 	}
 	if checkUser.Id > 0 {
 		rdb.CacheValue = checkUser
 		rdb.PrepareCacheWrite()
 		return nil, errors.New("username_is_used")
 	}
-	hash := helpers.GetMD5Hash(pass)
+	var hash *string
+	var temp string
+	if pass != nil {
+		temp = helpers.GetMD5Hash(*pass)
+		hash = &temp
+	} else {
+		hash = nil
+	}
 	registrationClone := &RegisterStruct{
 		Username:     username,
 		Email:        email,
 		Contact:      mobileNo,
 		Password:     hash,
 		PhoneCountry: country,
-		PhoneCode:    phone_code,
-		CountryFull:  country_full,
 	}
 	err = db.Table("users").Create(registrationClone).Error
 	if err != nil {

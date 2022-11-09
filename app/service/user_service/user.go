@@ -7,15 +7,16 @@ import (
 )
 
 type TokenStruct struct {
-	Username     string
-	Email        string
-	Contact      string
-	Password     string
-	UserId       string
+	Username     string  `json:"username,omitempty"`
+	Email        *string `json:"email,omitempty"`
+	Contact      *string `json:"contact,omitempty"`
+	Password     *string `json:"password,omitempty"`
+	UserId       string  `json:"user_id,omitempty"`
 	Tx           *gorm.DB
-	PhoneCountry string
-	PhoneCode    string
-	CountryFull  string
+	PhoneCountry *string `json:"country,omitempty"`
+	PhoneCode    string  `json:"code,omitempty"`
+	CountryFull  string  `json:"country_full,omitempty"`
+	Vcode        string  `json:"vcode,omitempty"`
 }
 
 type Vcode struct {
@@ -26,14 +27,14 @@ type Vcode struct {
 }
 
 func (m *TokenStruct) UserLogin() (*model.Users, error) {
-	member, err := model.UserLogin(m.Username, m.Password)
+	member, err := model.UserLogin(m.Username, *m.Password)
 	if err != nil {
 		return nil, err
 	}
 	return member, nil
 }
 func (m *TokenStruct) UserLoginWithEmail(Otp string) (*model.Users, error) {
-	member, err := model.UserLoginWithEmail(m.Email, Otp)
+	member, err := model.UserLoginWithEmail(*m.Email, Otp)
 	if err != nil {
 		return nil, err
 	}
