@@ -52,7 +52,6 @@ func InitApiRouter() *gin.Engine {
 		{
 			imApi.POST("/update-register", api.ImUpdateRegister)
 		}
-
 		accountApi := vApi.Group("/account")
 		{
 			jwtAccountApi := accountApi.Use(jwt.JWT())
@@ -63,6 +62,15 @@ func InitApiRouter() *gin.Engine {
 				jwtAccountApi.POST("update/profile", api.UpdateProfile)
 				jwtAccountApi.POST("update/token", api.UpdateToken)
 				jwtAccountApi.POST("update/password", api.UpdatePassword)
+			}
+		}
+		blackUserApi := vApi.Group("/black_user")
+		{
+			jwtBlackUserApi := blackUserApi.Use(jwt.JWT())
+			{
+				jwtBlackUserApi.POST("/create", api.CreateBlackUser)
+				jwtBlackUserApi.POST("/remove", api.RemoveBlackUser)
+				jwtBlackUserApi.GET("/query_black_list", api.GetQueryBlackList)
 			}
 		}
 		groupsApi := vApi.Group("/group")
