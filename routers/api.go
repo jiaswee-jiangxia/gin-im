@@ -60,7 +60,8 @@ func InitApiRouter() *gin.Engine {
 				jwtAccountApi.GET("/profile", api.GetProfile)
 				jwtAccountApi.POST("update/profile", api.UpdateProfile)
 				jwtAccountApi.POST("update/token", api.UpdateToken)
-				jwtAccountApi.POST("update/password", api.UpdatePassword)
+				jwtAccountApi.POST("change_password", api.UpdatePassword)
+				jwtAccountApi.GET("my_phone", api.GetPhoneNo)
 			}
 		}
 		groupsApi := vApi.Group("/group")

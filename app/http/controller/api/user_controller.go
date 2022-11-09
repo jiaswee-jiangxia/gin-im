@@ -390,3 +390,25 @@ func UpdatePassword(context *gin.Context) {
 	response.Success(context, consts.Success, profile)
 	return
 }
+
+func GetPhoneNo(context *gin.Context) {
+	var err error
+	username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, consts.Failed, nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	profile, err := userService.UserProfile()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
+		return
+	}
+	bytes := []byte(`{"PhoneNo":` + profile.Contact + "}")
+	var data map[string]interface{} = make(map[string]interface{})
+	json.Unmarshal(bytes, &data)
+	response.Success(context, consts.Success, data)
+}
