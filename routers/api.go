@@ -44,6 +44,7 @@ func InitApiRouter() *gin.Engine {
 	router.POST("/app/api/account/login", api.Login)
 	router.POST("/app/api/account/otp", api.GetOTP)
 	router.POST("/app/api/account/register", api.Register)
+	router.POST("/app/api/account/vcode/get_vcode", api.GetOTP)
 
 	vApi := router.Group("/app/api")
 	{

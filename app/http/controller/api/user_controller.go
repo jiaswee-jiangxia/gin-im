@@ -5,7 +5,6 @@ import (
 	"fmt"
 	consts "goskeleton/app/global/response"
 	"goskeleton/app/helpers"
-	"net/smtp"
 
 	"goskeleton/app/global/variable"
 	"goskeleton/app/service/redis_service"
@@ -112,65 +111,20 @@ func LoginByEmail(context *gin.Context, creds Credentials) {
 	return
 }
 
-type OtpRequest struct {
-	Purpose string `form:"purpose" json:"purpose" binding:"required"`
-	Item    string `form:"item" json:"item" binding:"required"`
-}
-
-func GetOTP(context *gin.Context) {
-	otp := &user_service.OTP{}
-	Req := OtpRequest{}
-	if err := context.ShouldBind(&Req); err != nil {
-		response.ErrorParam(context, Req)
-		return
-	}
-	if Req.Purpose == "email" { // Request for email OTP
-		otp.Purpose = "email"
-		otp.Cred = Req.Item
-		otp.OTP = "000000" // Generate with OTP generator, hardcode for now
-		otp.ExpiryTime = 0
-		otp.SaveOTP()
-
-		from := "your_email"              // Replace with sender email
-		password := "your_email_password" // Replace with sender email password
-		toEmailAddress := Req.Item
-		to := []string{toEmailAddress}
-
-		host := "mail.jiangxia.com.sg" // Email host
-		port := "587"                  // Email host port
-		address := host + ":" + port
-
-		subject := "Subject: This is the subject of the mail\n" // Email subject
-		body := otp.OTP                                         // OTP code and other message
-		message := []byte(subject + "\n" + body)
-
-		auth := helpers.LoginAuthWrapper{
-			Username: from,
-			Password: password,
-		}
-		fmt.Println(message)
-		err := smtp.SendMail(address, auth, from, to, message)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return
-}
-
 type RegisterStruct struct {
+	Method               string    `form:"method" json:"method" binding:"required"`
 	Username             string    `form:"username" json:"username" binding:"required,alphanum,min=4"`
-	Password             string    `form:"password" json:"password" binding:"required,min=6"`
-	ConfirmationPassword string    `form:"confirmation_password" json:"confirmation_password" binding:"required,min=6"`
+	Password             string    `form:"password" json:"password"`
+	ConfirmationPassword string    `form:"confirmation_password" json:"confirmation_password"`
 	Email                string    `form:"email" json:"email" binding:"email"`
-	Contact              string    `form:"contact" json:"contact" binding:"required"`
-	PhoneCode            PhoneCode `form:"phone_code" json:"phone_code" binding:"required"`
+	Contact              string    `form:"contact" json:"contact"`
+	PhoneCode            PhoneCode `form:"phone_code" json:"phone_code"`
 }
 
 type PhoneCode struct {
-	Country     string `form:"country" json:"country" binding:"required"`
-	Code        string `form:"code" json:"code" binding:"required"`
-	CountryFull string `form:"country_full" json:"country_full" binding:"required"`
+	Country     string `form:"country" json:"country"`
+	Code        string `form:"code" json:"code"`
+	CountryFull string `form:"country_full" json:"country_full"`
 }
 
 func Register(context *gin.Context) {

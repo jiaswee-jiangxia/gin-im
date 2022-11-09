@@ -18,9 +18,9 @@ type TokenStruct struct {
 	CountryFull  string
 }
 
-type OTP struct {
+type Vcode struct {
 	Cred       string `form:"cred" json:"cred"`
-	OTP        string `form:"otp" json:"otp"`
+	Vcode      string `form:"vcode" json:"vcode"`
 	ExpiryTime int64  `form:"expiry" json:"expiry"`
 	Purpose    string `form:"purpose" json:"purpose"`
 }
@@ -96,10 +96,5 @@ func (m *TokenStruct) UpdateIosToken(IosToken *string) error {
 
 func (m *TokenStruct) UpdatePassword(old_password string, new_password string) error {
 	err := model.UpdatePassword(&m.Username, old_password, new_password)
-	return err
-}
-
-func (o *OTP) SaveOTP() error {
-	err := model.SaveOTP(o.Cred, o.OTP, o.Purpose, o.ExpiryTime)
 	return err
 }

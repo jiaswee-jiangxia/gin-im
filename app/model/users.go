@@ -33,14 +33,6 @@ type RegisterStruct struct {
 	CountryFull  string `gorm:"column:country_full" json:"country_full"`
 }
 
-type OTP struct {
-	BaseModel
-	Cred       string `gorm:"column:cred" json:"cred"`
-	OTP        string `gorm:"column:otp" json:"otp"`
-	ExpiryTime int64  `gorm:"column:expiry_time" json:"expiry_time"`
-	Purpose    string `gorm:"column:purpose" json:"purpose"`
-}
-
 func UserRegister(username string, email string, pass string, mobileNo string,
 	country string, phone_code string, country_full string) (*RegisterStruct, error) {
 	var checkUser *Users
@@ -250,25 +242,14 @@ func UpdatePassword(username *string, oldPassword string, newPassword string) er
 	return err
 }
 
-func SaveOTP(cred, otp, purpose string, expiry int64) error {
-	otpObj := OTP{
-		Cred:       cred,
-		OTP:        otp,
-		Purpose:    purpose,
-		ExpiryTime: expiry,
-	}
-	err := db.Table("otp").Create(&otpObj).Error
-	return err
-}
-
-func UserLoginWithEmail(email string, otp string) (*Users, error) {
+func UserLoginWithEmail(email string, vcode string) (*Users, error) {
 	var member = &Users{}
-	var otpp = &OTP{}
+	var vcodee = &Vcode{}
 	var err error
-	db.Table("otp").
+	db.Table("vcode").
 		Where("cred = ?", email).
-		Where("otp = ?", otp).First(&otpp)
-	if otpp.Id > 0 { // Record matched
+		Where("vcode = ?", vcode).First(&vcodee)
+	if vcodee.Id > 0 { // Record matched
 		err = db.Table("users").
 			Where("email", email).First(&member).Error
 		if err != nil {
