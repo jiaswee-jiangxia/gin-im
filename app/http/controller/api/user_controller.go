@@ -393,12 +393,12 @@ func UpdatePassword(context *gin.Context) {
 
 func GetPhoneNo(context *gin.Context) {
 	var err error
-	username, exist := context.Get("username")
+  username, exist := context.Get("username")
 	if !exist {
 		response.Success(context, consts.Failed, nil)
 	}
 	usernameText := fmt.Sprintf("%v", username)
-
+  
 	userService := user_service.TokenStruct{
 		Username: usernameText,
 	}
@@ -407,8 +407,64 @@ func GetPhoneNo(context *gin.Context) {
 		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
+  
 	bytes := []byte(`{"PhoneNo":` + profile.Contact + "}")
 	var data map[string]interface{} = make(map[string]interface{})
 	json.Unmarshal(bytes, &data)
 	response.Success(context, consts.Success, data)
+}
+
+
+func RefreshToken(context *gin.Context) {
+  username, exist := context.Get("username")
+	if !exist {
+		response.Success(context, consts.Failed, nil)
+	}
+	usernameText := fmt.Sprintf("%v", username)
+	expirationTime := time.Now().Add(720 * time.Minute)
+
+	// Get Profile
+	rdb := redis_service.RedisStruct{
+		CacheName:      "USER_PROFILE:" + usernameText,
+		CacheNameIndex: redis_service.RedisCacheUser,
+	}
+	cacheData := rdb.PrepareCacheRead()
+	if cacheData != "" {
+		var returnProfile interface{}
+		_ = json.Unmarshal([]byte(cacheData), &returnProfile)
+	}
+	userService := user_service.TokenStruct{
+		Username: usernameText,
+	}
+	profile, err := userService.UserProfile()
+	if err != nil {
+		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
+		return
+	}
+  
+	rdb.CacheValue = profile
+	rdb.PrepareCacheWrite()
+	// Create the JWT claims, which includes the username and expiry time
+	claims := &Claims{
+		Username: usernameText,
+		StandardClaims: jwt.StandardClaims{
+			// In JWT, the expiry time is expressed as unix milliseconds
+			ExpiresAt: expirationTime.Unix(),
+			IssuedAt:  time.Now().Unix(),
+			Id:        strconv.Itoa(int(profile.Id)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	signedString, errSignedString := token.SignedString(variable.PrivateKey)
+	if errSignedString != nil {
+		response.SuccessButFail(context, errSignedString.Error(), consts.Failed, nil)
+		return
+	}
+	response.Success(context, consts.Success, &Token{Token: signedString})
+	return
+}
+
+func CheckToken(context *gin.Context) {
+	response.Success(context, consts.Success, nil)
+	return
 }
