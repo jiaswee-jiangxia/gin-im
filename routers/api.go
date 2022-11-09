@@ -41,9 +41,9 @@ func InitApiRouter() *gin.Engine {
 		backend.GET("ws", validatorFactory.Create(consts.ValidatorPrefix+"WebsocketConnect"))
 	}
 
-	router.POST("/app/api/user/login", api.Login)
-	router.POST("/app/api/user/otp", api.GetOTP)
-	router.POST("/app/api/user/register", api.Register)
+	router.POST("/app/api/account/login", api.Login)
+	router.POST("/app/api/account/otp", api.GetOTP)
+	router.POST("/app/api/account/register", api.Register)
 
 	vApi := router.Group("/app/api")
 	{
@@ -53,14 +53,14 @@ func InitApiRouter() *gin.Engine {
 			imApi.POST("/update-register", api.ImUpdateRegister)
 		}
 
-		userApi := vApi.Group("/user")
+		accountApi := vApi.Group("/account")
 		{
-			jwtUserGroup := userApi.Use(jwt.JWT())
+			jwtAccountApi := accountApi.Use(jwt.JWT())
 			{
-				jwtUserGroup.GET("/profile", api.GetProfile)
-				jwtUserGroup.POST("update/profile", api.UpdateProfile)
-				jwtUserGroup.POST("update/token", api.UpdateToken)
-				jwtUserGroup.POST("update/password", api.UpdatePassword)
+				jwtAccountApi.GET("/profile", api.GetProfile)
+				jwtAccountApi.POST("update/profile", api.UpdateProfile)
+				jwtAccountApi.POST("update/token", api.UpdateToken)
+				jwtAccountApi.POST("update/password", api.UpdatePassword)
 			}
 		}
 		groupsApi := vApi.Group("/group")
