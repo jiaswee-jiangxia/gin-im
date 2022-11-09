@@ -57,6 +57,8 @@ func InitApiRouter() *gin.Engine {
 		{
 			jwtAccountApi := accountApi.Use(jwt.JWT())
 			{
+				jwtAccountApi.POST("/token_refresh", api.RefreshToken)
+				jwtAccountApi.POST("/check_token", api.CheckToken)
 				jwtAccountApi.GET("/profile", api.GetProfile)
 				jwtAccountApi.POST("update/profile", api.UpdateProfile)
 				jwtAccountApi.POST("update/token", api.UpdateToken)
