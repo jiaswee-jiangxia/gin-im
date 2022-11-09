@@ -18,7 +18,7 @@ type VcodeRequest struct {
 	Id      string `form:"id" json:"id" binding:"required"`           // +650000000, abc@def.com, etc
 }
 
-func GetOTP(context *gin.Context) {
+func GetVcode(context *gin.Context) {
 	vcode := &vcode_service.Vcode{}
 	Req := VcodeRequest{}
 	if err := context.ShouldBind(&Req); err != nil {
