@@ -16,3 +16,13 @@ func (m *FollowStruct) Unfollow() error {
 	err := model.Unfollow(m.Follower, m.Followed)
 	return err
 }
+
+func (m *FollowStruct) GetMyFollowList() ([]string, error) {
+	followList, err := model.GetMyFollowList(m.Follower)
+	return followList, err
+}
+
+func (m *FollowStruct) GetUserFollowCount() int {
+	count := model.GetUserFollowCount(m.Follower)
+	return count
+}

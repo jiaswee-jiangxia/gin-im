@@ -106,9 +106,9 @@ func InitApiRouter() *gin.Engine {
 			{
 				jwtFollowApi.POST("/focus", api.FollowUser)
 				jwtFollowApi.POST("/remove", api.UnfollowUser)
-				jwtFollowApi.GET("/query_follow_ids")
-				jwtFollowApi.POST("/follow_count")
-				jwtFollowApi.POST("/follow_both/is_friend")
+				jwtFollowApi.GET("/query_follow_ids", api.GetMyFollowList)
+				jwtFollowApi.POST("/follow_count", api.GetUserFollowCount)
+				jwtFollowApi.POST("/follow_both/is_friend", api.CheckIsFriend)
 			}
 		}
 	}
