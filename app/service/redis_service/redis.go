@@ -19,6 +19,7 @@ const RedisCacheDefault = 0
 const RedisCacheUser = 1
 const RedisCacheGroup = 2
 const RedisCacheLock = 3
+const RedisCacheFollow = 4
 
 var rdb [16]*redis.Client
 var rdbCount = 16

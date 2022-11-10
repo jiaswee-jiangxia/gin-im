@@ -100,6 +100,17 @@ func InitApiRouter() *gin.Engine {
 				jwtContactApi.POST("/remove", api.RemoveContact)
 			}
 		}
+		followApi := vApi.Group("/follow")
+		{
+			jwtFollowApi := followApi.Use(jwt.JWT())
+			{
+				jwtFollowApi.POST("/focus", api.FollowUser)
+				jwtFollowApi.POST("/remove", api.UnfollowUser)
+				jwtFollowApi.GET("/query_follow_ids")
+				jwtFollowApi.POST("/follow_count")
+				jwtFollowApi.POST("/follow_both/is_friend")
+			}
+		}
 	}
 	return router
 }

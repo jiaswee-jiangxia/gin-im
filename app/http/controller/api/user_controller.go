@@ -393,12 +393,11 @@ func UpdatePassword(context *gin.Context) {
 
 func GetPhoneNo(context *gin.Context) {
 	var err error
-  username, exist := context.Get("username")
+	username, exist := context.Get("username")
 	if !exist {
 		response.Success(context, consts.Failed, nil)
 	}
 	usernameText := fmt.Sprintf("%v", username)
-  
 	userService := user_service.TokenStruct{
 		Username: usernameText,
 	}
@@ -407,16 +406,14 @@ func GetPhoneNo(context *gin.Context) {
 		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
-  
 	bytes := []byte(`{"PhoneNo":` + profile.Contact + "}")
 	var data map[string]interface{} = make(map[string]interface{})
 	json.Unmarshal(bytes, &data)
 	response.Success(context, consts.Success, data)
 }
 
-
 func RefreshToken(context *gin.Context) {
-  username, exist := context.Get("username")
+	username, exist := context.Get("username")
 	if !exist {
 		response.Success(context, consts.Failed, nil)
 	}
@@ -441,7 +438,7 @@ func RefreshToken(context *gin.Context) {
 		response.SuccessButFail(context, err.Error(), consts.Failed, nil)
 		return
 	}
-  
+
 	rdb.CacheValue = profile
 	rdb.PrepareCacheWrite()
 	// Create the JWT claims, which includes the username and expiry time
